@@ -1,0 +1,2415 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>CocoroTool</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Mono:wght@400;500&family=Zen+Kaku+Gothic+New:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #0c1018;
+  --s1:       #141921;
+  --s2:       #1b2230;
+  --s3:       #222b3a;
+  --bd:       #28334a;
+  --tx:       #dde3f0;
+  --mu:       #6b7a96;
+  --ok:       #6ec97b;
+  --wn:       #f0b95a;
+  --dg:       #e95f5f;
+  --pu:       #c084e0;
+  --bl:       #82c4f8;
+  --r: 10px;
+  --c-skin:   #4dbdac;
+  --c-circ:   #7986cb;
+  --c-emg:    #e07b5a;
+  --c-cons:   #9b8ecf;
+  --c-excr:   #6aab8e;
+  --c-eol:    #b07cae;
+  --c-stoma:  #d4956a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--tx);font-family:'Noto Sans JP',sans-serif;padding-bottom:110px;font-size:15px}
+
+/* HEADER */
+.hdr{position:sticky;top:0;z-index:200;background:rgba(12,16,24,.94);backdrop-filter:blur(14px);border-bottom:1px solid var(--bd);padding:12px 16px 10px}
+.hdr h1{font-family:'DM Mono',monospace;font-size:1rem;font-weight:500;letter-spacing:.06em}
+.hdr p{font-size:.62rem;color:var(--mu);margin-top:1px}
+
+.main{padding:12px 12px 0}
+
+/* CATEGORY */
+.cat{margin-bottom:10px;border-radius:var(--r);border:1px solid var(--bd);overflow:hidden;transition:border-color .2s}
+.cat.open{border-color:var(--cc,var(--bd))}
+
+.cat-hdr{display:flex;align-items:center;gap:11px;padding:13px 15px;background:var(--s1);cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;transition:background .12s}
+.cat-hdr:active{background:var(--s2)}
+
+.cat-ico{width:36px;height:36px;border-radius:9px;background:color-mix(in srgb,var(--cc) 16%,transparent);border:1px solid color-mix(in srgb,var(--cc) 35%,transparent);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+.cat-inf{flex:1;min-width:0}
+.cat-ttl{font-size:.9rem;font-weight:700;color:var(--cc)}
+.cat-sub{font-size:.65rem;color:var(--mu);margin-top:2px}
+.cat-badges{display:flex;flex-wrap:wrap;gap:3px;justify-content:flex-end;max-width:120px}
+.cbadge{font-size:.58rem;font-family:'DM Mono',monospace;padding:2px 6px;border-radius:4px;background:color-mix(in srgb,var(--cc) 13%,transparent);color:var(--cc);border:1px solid color-mix(in srgb,var(--cc) 28%,transparent);white-space:nowrap}
+.chev{font-size:.8rem;color:var(--mu);transition:transform .22s;margin-left:4px;flex-shrink:0}
+.cat.open .chev{transform:rotate(180deg)}
+
+.cat-body{display:none;background:var(--s2);border-top:1px solid var(--bd)}
+.cat.open .cat-body{display:block}
+
+/* TABS */
+.tabs{display:flex;border-bottom:1px solid var(--bd);overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex-shrink:0;padding:9px 14px;font-size:.74rem;font-weight:500;color:var(--mu);cursor:pointer;border-bottom:2px solid transparent;transition:color .14s,border-color .14s;-webkit-tap-highlight-color:transparent}
+.tab.on{color:var(--cc);border-bottom-color:var(--cc)}
+
+.pane{display:none;padding:11px 11px 14px}
+.pane.on{display:block}
+
+/* SECTION BOX */
+.sb{background:var(--s1);border:1px solid var(--bd);border-radius:9px;margin-bottom:8px;overflow:hidden;transition:border-color .18s}
+.sb.sel{border-color:color-mix(in srgb,var(--cc) 55%,transparent)}
+.sh{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--s3)}
+.sk{font-family:'DM Mono',monospace;font-size:.95rem;font-weight:500;color:var(--cc);min-width:16px}
+.sn{font-size:.8rem;font-weight:500;flex:1}
+.se{font-size:.62rem;color:var(--mu);margin-left:4px}
+.sv{font-family:'DM Mono',monospace;font-size:.8rem;font-weight:500;color:var(--ok);min-width:36px;text-align:right}
+.hint{padding:5px 12px 0;font-size:.63rem;color:var(--mu);line-height:1.5;background:var(--s3)}
+.ncbadge{font-size:.56rem;padding:1px 5px;border-radius:3px;margin-left:5px;background:rgba(240,185,90,.1);color:var(--wn);border:1px solid rgba(240,185,90,.28)}
+
+/* OPTIONS */
+.opts{padding:7px 8px 9px;display:flex;flex-direction:column;gap:4px}
+.opt{display:flex;align-items:flex-start;gap:8px;padding:7px 9px;border-radius:7px;border:1px solid transparent;cursor:pointer;transition:background .1s,border-color .1s;-webkit-tap-highlight-color:transparent}
+.opt:active{background:var(--s3)}
+.opt.c0{background:rgba(110,201,123,.08);border-color:rgba(110,201,123,.32)}
+.opt.c1{background:color-mix(in srgb,var(--cc) 7%,transparent);border-color:color-mix(in srgb,var(--cc) 32%,transparent)}
+.opt.cw{background:rgba(240,185,90,.07);border-color:rgba(240,185,90,.30)}
+.opt.cd{background:rgba(233,95,95,.07);border-color:rgba(233,95,95,.28)}
+.opt.cp{background:rgba(192,132,224,.08);border-color:rgba(192,132,224,.32)}
+
+.rdot{width:14px;height:14px;border-radius:50%;border:2px solid var(--mu);flex-shrink:0;margin-top:3px;position:relative;transition:all .13s}
+.opt.c0 .rdot,.opt.c1 .rdot,.opt.cw .rdot,.opt.cd .rdot,.opt.cp .rdot{border-color:var(--cc);background:var(--cc)}
+.opt.c0 .rdot::after,.opt.c1 .rdot::after,.opt.cw .rdot::after,.opt.cd .rdot::after,.opt.cp .rdot::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:5px;height:5px;border-radius:50%;background:var(--bg)}
+
+.olbl{font-family:'DM Mono',monospace;font-size:.74rem;font-weight:500;min-width:40px;flex-shrink:0;margin-top:2px;color:var(--wn)}
+.olbl.ok{color:var(--ok)}.olbl.hv{color:var(--dg)}.olbl.pu{color:var(--pu)}.olbl.bl{color:var(--bl)}
+.otx{font-size:.76rem;line-height:1.52}
+.osub{font-size:.65rem;color:var(--mu);margin-top:2px;font-style:italic}
+.otag{display:inline-block;font-size:.58rem;padding:1px 5px;border-radius:3px;margin-left:4px;vertical-align:middle;font-style:normal}
+.tnew{background:rgba(192,132,224,.14);color:var(--pu);border:1px solid rgba(192,132,224,.32)}
+.tfast{background:rgba(130,196,248,.14);color:var(--bl);border:1px solid rgba(130,196,248,.32)}
+.tslow{background:rgba(240,185,90,.14);color:var(--wn);border:1px solid rgba(240,185,90,.30)}
+
+/* TOTAL BAR */
+.tbar{background:var(--s3);border:1px solid var(--bd);border-radius:9px;padding:10px 13px;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+.tnum{font-family:'DM Mono',monospace;font-size:1.7rem;font-weight:500;min-width:50px}
+.trisk{font-size:.8rem;font-weight:700}
+.trsub{font-size:.63rem;color:var(--mu);margin-top:2px}
+
+/* TIMER */
+.tmr{background:var(--s3);border:1px solid var(--bd);border-radius:9px;padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+.tdisp{font-family:'DM Mono',monospace;font-size:1.5rem;font-weight:500;min-width:56px;color:var(--c-circ)}
+.tdisp.run{color:var(--wn)}.tdisp.done{color:var(--ok)}
+.tinf{flex:1;font-size:.68rem;color:var(--mu);line-height:1.5}
+.tinf strong{color:var(--tx);display:block;margin-bottom:2px}
+.tbtns{display:flex;flex-direction:column;gap:5px}
+.tbtn{padding:7px 10px;border-radius:6px;border:none;font-family:'Noto Sans JP',sans-serif;font-size:.72rem;font-weight:700;cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent}
+.tbtn-go{background:var(--c-circ);color:#fff}
+.tbtn-rs{background:var(--s1);color:var(--mu);border:1px solid var(--bd)}
+
+/* LR / SITE */
+.lrtgl{display:flex;border-radius:8px;overflow:hidden;border:1px solid var(--bd);margin-bottom:10px}
+.lrbtn{flex:1;padding:8px;background:var(--s3);color:var(--mu);border:none;font-family:'Noto Sans JP',sans-serif;font-size:.78rem;cursor:pointer;transition:all .13s;-webkit-tap-highlight-color:transparent}
+.lrbtn:first-child{border-right:1px solid var(--bd)}
+.lrbtn.on{background:color-mix(in srgb,var(--c-circ) 16%,transparent);color:var(--c-circ);font-weight:700}
+
+.sitebar{display:flex;border-bottom:1px solid var(--bd);margin-bottom:10px;overflow-x:auto;scrollbar-width:none}
+.sitebar::-webkit-scrollbar{display:none}
+.spill{flex-shrink:0;padding:9px 14px;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--mu);font-size:.76rem;font-family:'Noto Sans JP',sans-serif;cursor:pointer;transition:color .13s,border-color .13s;-webkit-tap-highlight-color:transparent;white-space:nowrap}
+.spill.on{color:var(--c-circ);border-bottom-color:var(--c-circ);font-weight:700}
+
+/* OPQRST / SAMPLE — テキスト入力式 */
+.qitem{background:var(--s1);border:1px solid var(--bd);border-radius:9px;margin-bottom:8px;overflow:hidden;transition:border-color .18s}
+.qitem.filled{border-color:color-mix(in srgb,var(--cc) 50%,transparent)}
+.qhdr{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--s3)}
+.qkey{font-family:'DM Mono',monospace;font-size:1rem;font-weight:700;color:var(--cc);min-width:22px}
+.qname{font-size:.82rem;font-weight:700;flex:1}
+.qeng{font-size:.62rem;color:var(--mu);margin-left:4px}
+.qbody{padding:8px 10px 10px}
+.qhint{font-size:.68rem;color:var(--mu);line-height:1.55;margin-bottom:6px}
+.qexamples{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px}
+.qex{font-size:.66rem;padding:3px 8px;border-radius:5px;background:color-mix(in srgb,var(--cc) 10%,transparent);color:var(--cc);border:1px solid color-mix(in srgb,var(--cc) 24%,transparent);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .1s}
+.qex:active{background:color-mix(in srgb,var(--cc) 22%,transparent)}
+.qinp{width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:7px;padding:8px 10px;color:var(--tx);font-family:'Noto Sans JP',sans-serif;font-size:.8rem;resize:none;outline:none;transition:border-color .14s;line-height:1.5}
+.qinp:focus{border-color:color-mix(in srgb,var(--cc) 55%,transparent)}
+.qinp::placeholder{color:var(--mu)}
+
+/* RESULT BAR */
+.rbar{position:fixed;bottom:0;left:0;right:0;background:rgba(20,25,33,.96);backdrop-filter:blur(14px);border-top:1px solid var(--bd);padding:10px 13px 14px;z-index:300;display:none}
+.rbar.vis{display:block}
+.rinner{display:flex;align-items:center;gap:9px}
+.rlbl{font-size:.58rem;color:var(--mu)}
+.rscore{font-family:'DM Mono',monospace;font-size:1.4rem;font-weight:500;flex-shrink:0}
+.rtw{flex:1;min-width:0}
+.rtxt{font-family:'DM Mono',monospace;font-size:.7rem;color:var(--tx);word-break:break-all;line-height:1.5}
+.rnote{font-size:.6rem;color:var(--mu);margin-top:1px}
+.rbtns{display:flex;gap:5px;flex-shrink:0}
+.bcopy{padding:9px 13px;border-radius:7px;border:none;font-family:'Noto Sans JP',sans-serif;font-size:.76rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:opacity .16s,transform .1s;-webkit-tap-highlight-color:transparent}
+.bcopy:active{transform:scale(.95)}
+.bcopy.done{background:var(--ok)!important;color:#0c1018}
+.brst{padding:9px 9px;border-radius:7px;border:1px solid var(--bd);background:transparent;color:var(--mu);font-family:'Noto Sans JP',sans-serif;font-size:.76rem;cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent}
+.brst:active{color:var(--dg);border-color:var(--dg)}
+
+/* ══ SPLASH ══ */
+#splash{
+  position:fixed;inset:0;z-index:999;
+  background:var(--bg);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:0;
+  transition:opacity .5s ease, visibility .5s ease;
+}
+#splash.hidden{opacity:0;visibility:hidden;pointer-events:none}
+
+.sp-bg{
+  position:absolute;inset:0;overflow:hidden;
+}
+.sp-ring{
+  position:absolute;border-radius:50%;border:1px solid;
+  animation:ringpulse 4s ease-in-out infinite;
+}
+.sp-ring:nth-child(1){width:340px;height:340px;top:50%;left:50%;transform:translate(-50%,-50%);border-color:rgba(77,189,172,.12);animation-delay:0s}
+.sp-ring:nth-child(2){width:480px;height:480px;top:50%;left:50%;transform:translate(-50%,-50%);border-color:rgba(77,189,172,.07);animation-delay:.6s}
+.sp-ring:nth-child(3){width:620px;height:620px;top:50%;left:50%;transform:translate(-50%,-50%);border-color:rgba(121,134,203,.05);animation-delay:1.2s}
+@keyframes ringpulse{0%,100%{opacity:.4;transform:translate(-50%,-50%) scale(1)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.03)}}
+
+.sp-dot{
+  position:absolute;border-radius:50%;
+  animation:dotfloat 6s ease-in-out infinite;
+}
+.sp-dot:nth-child(4){width:4px;height:4px;background:rgba(77,189,172,.5);top:28%;left:30%;animation-delay:0s}
+.sp-dot:nth-child(5){width:3px;height:3px;background:rgba(121,134,203,.5);top:65%;left:72%;animation-delay:1s}
+.sp-dot:nth-child(6){width:5px;height:5px;background:rgba(77,189,172,.3);top:42%;left:80%;animation-delay:2s}
+.sp-dot:nth-child(7){width:2px;height:2px;background:rgba(240,185,90,.4);top:72%;left:22%;animation-delay:1.5s}
+.sp-dot:nth-child(8){width:3px;height:3px;background:rgba(121,134,203,.4);top:20%;left:65%;animation-delay:2.5s}
+@keyframes dotfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+
+.sp-content{
+  position:relative;z-index:2;
+  display:flex;flex-direction:column;align-items:center;
+  animation:fadein .8s ease both;
+}
+@keyframes fadein{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+.sp-logo{
+  width:110px;height:110px;
+  border-radius:50%;
+  background:transparent;
+  border:none;
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:20px;
+  filter:drop-shadow(0 0 16px rgba(255,180,200,.4)) drop-shadow(0 4px 14px rgba(0,0,0,.25));
+  animation:logoglow 3s ease-in-out infinite;
+}
+@keyframes logoglow{0%,100%{box-shadow:0 0 32px rgba(77,189,172,.12),0 0 60px rgba(121,134,203,.08)}50%{box-shadow:0 0 42px rgba(77,189,172,.22),0 0 80px rgba(121,134,203,.14)}}
+
+.sp-group{
+  font-family:'Zen Kaku Gothic New',sans-serif;
+  font-size:1.35rem;
+  font-weight:700;
+  letter-spacing:.15em;
+  color:var(--tx);
+  margin-bottom:8px;
+  animation:fadein .8s .1s ease both;
+}
+.sp-title{
+  font-family:'DM Mono',monospace;
+  font-size:2.6rem;
+  font-weight:500;
+  letter-spacing:.06em;
+  background:linear-gradient(135deg,#4dbdac,#7986cb);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+  line-height:1.1;
+  margin-bottom:6px;
+  animation:fadein .8s .2s ease both;
+}
+.sp-sub{
+  font-size:.72rem;
+  font-weight:300;
+  letter-spacing:.18em;
+  color:var(--mu);
+  animation:fadein .8s .3s ease both;
+}
+
+.sp-line{
+  width:48px;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(77,189,172,.6),transparent);
+  margin:18px 0;
+  animation:fadein .8s .35s ease both;
+}
+
+.sp-scales{
+  display:flex;gap:8px;
+  animation:fadein .8s .45s ease both;
+}
+.sp-stag{
+  font-size:.58rem;
+  letter-spacing:.1em;
+  padding:3px 9px;
+  border-radius:20px;
+  border:1px solid rgba(77,189,172,.2);
+  color:rgba(77,189,172,.7);
+  font-family:'DM Mono',monospace;
+}
+
+.sp-tap{
+  margin-top:40px;
+  font-size:.7rem;
+  letter-spacing:.2em;
+  color:rgba(77,189,172,.6);
+  font-family:'DM Mono',monospace;
+  animation:tapblink 1.8s ease-in-out infinite, fadein .8s .55s ease both;
+}
+@keyframes tapblink{0%,100%{opacity:.4}50%{opacity:1}}
+
+</style>
+</head>
+<body>
+
+<div id="splash" onclick="closeSplash()" style="cursor:pointer">
+  <div class="sp-bg">
+    <div class="sp-ring"></div>
+    <div class="sp-ring"></div>
+    <div class="sp-ring"></div>
+    <div class="sp-dot"></div>
+    <div class="sp-dot"></div>
+    <div class="sp-dot"></div>
+    <div class="sp-dot"></div>
+    <div class="sp-dot"></div>
+  </div>
+  <div class="sp-content">
+    <div class="sp-logo"><img src="data:image/webp;base64,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" style="width:88px;height:88px;object-fit:contain"></div>
+    <div class="sp-group">こころHSグループ</div>
+    <div class="sp-title">CocoroTool</div>
+    <div class="sp-tap">タップして開始</div>
+  </div>
+</div>
+
+<div class="hdr">
+  <div style="display:flex;align-items:center;gap:8px">
+    <div style="width:28px;height:28px;flex-shrink:0"><img src="data:image/webp;base64,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" style="width:100%;height:100%;object-fit:contain"></div>
+    <div>
+      <div style="font-size:.56rem;letter-spacing:.12em;color:var(--mu);font-family:'Zen Kaku Gothic New',sans-serif;font-weight:300">こころHSグループ</div>
+      <h1 style="font-family:'DM Mono',monospace;font-weight:500;letter-spacing:.06em;font-size:.95rem;margin-top:1px;background:linear-gradient(135deg,#4dbdac,#7986cb);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">CocoroTool</h1>
+    </div>
+  </div>
+</div>
+
+<div class="main" id="main"></div>
+
+<div class="rbar" id="rbar">
+  <div class="rinner">
+    <div><div class="rlbl" id="rlbl">スコア</div><div class="rscore" id="rscore" style="color:var(--ok)">—</div></div>
+    <div class="rtw"><div class="rtxt" id="rtxt">—</div><div class="rnote" id="rnote"></div></div>
+    <div class="rbtns">
+      <button class="brst" onclick="doReset()">リセット</button>
+      <button class="bcopy" id="bcopy" onclick="doCopy()">コピー</button>
+    </div>
+  </div>
+</div>
+
+<!-- 深さ評価ガイド モーダル -->
+<div id="depth-modal" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(8,11,16,.88);backdrop-filter:blur(6px);overflow-y:auto;-webkit-overflow-scrolling:touch" onclick="if(event.target===this)hideDepthGuide()">
+  <div style="max-width:540px;margin:0 auto;min-height:100%;padding:14px 12px 40px">
+    <div style="display:flex;align-items:center;gap:8px;position:sticky;top:0;background:linear-gradient(180deg,rgba(8,11,16,.98),rgba(8,11,16,.0));padding:8px 2px 14px;z-index:2">
+      <div style="font-size:1.05rem;font-weight:700;color:var(--c-skin);flex:1">📐 DESIGN-R® 深さ(D)評価ガイド</div>
+      <button onclick="hideDepthGuide()" style="width:34px;height:34px;border-radius:50%;border:1px solid var(--bd);background:var(--s2);color:var(--tx);font-size:1.1rem;cursor:pointer;flex-shrink:0;-webkit-tap-highlight-color:transparent">✕</button>
+    </div>
+    <div id="depth-modal-body"></div>
+  </div>
+</div>
+
+<script>
+'use strict';
+// ── グローバル ──────────────────────────────
+let gCopyFn = null, gResetFn = null;
+const $ = id => document.getElementById(id);
+
+// ── 日付ユーティリティ ───────────────────────
+function fmtDate(d) {
+  return (d.getMonth()+1) + '/' + d.getDate();
+}
+function today() { return new Date(); }
+function nextWeek() { const d = new Date(); d.setDate(d.getDate()+7); return d; }
+
+// copyFnは「結果文字列」を返す。wrapCopy でフォーマットを付与する
+let gScaleName = '';
+function wrapCopy(scaleName, resultBody) {
+  const t = fmtDate(today()), n = fmtDate(nextWeek());
+  return `【${scaleName}】評価日付　${t}\n${resultBody}\n次回評価目安　${n}`;
+}
+
+function showBar(lbl, score, txt, note, color, scaleName, copyFn, resetFn) {
+  gCopyFn = copyFn; gResetFn = resetFn; gScaleName = scaleName;
+  $('rlbl').textContent = lbl;
+  $('rscore').textContent = score;
+  $('rscore').style.color = color;
+  $('rtxt').textContent = txt;
+  $('rnote').textContent = note || '';
+  $('bcopy').style.background = color;
+  $('bcopy').style.color = '#0c1018';
+  $('rbar').classList.add('vis');
+}
+function hideBar() { $('rbar').classList.remove('vis'); }
+
+// ══════════════════════════════════════════════
+// 深さ(D)評価ガイド モーダル
+// ══════════════════════════════════════════════
+function showDepthGuide() {
+  const body = document.getElementById('depth-modal-body');
+  if (body) body.innerHTML = buildDepthGuide();
+  const mo = document.getElementById('depth-modal');
+  if (mo) mo.style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+function hideDepthGuide() {
+  const mo = document.getElementById('depth-modal');
+  if (mo) mo.style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function buildDepthGuide() {
+  // 参考図のレイアウトを踏襲したオリジナル断面模式図
+  // 層: 表皮(肌)→真皮(ピンク)→脂肪組織(黄)→筋(オレンジ)→骨(白×オレンジ)
+  // SVG 1枚あたり viewBox 0 0 140 150
+
+  function section(label, title, drawFn, note, lc, findings) {
+    const W = 140, H = 150;
+    let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block">`;
+    // 外枠
+    svg += `<rect x="1" y="1" width="${W-2}" height="${H-2}" fill="none" stroke="#3a4358" stroke-width="1" rx="4"/>`;
+    // ── 基本の層構造 ──
+    // 表皮（肌色・波打つ上面）
+    svg += `<path d="M4 28 Q20 22 36 28 T68 28 T100 28 T136 28 L136 40 L4 40 Z" fill="#f6d9c8"/>`;
+    // 真皮（ピンク）
+    svg += `<rect x="4" y="40" width="132" height="26" fill="#ef9a9a"/>`;
+    // 脂肪組織（黄）
+    svg += `<rect x="4" y="66" width="132" height="30" fill="#ffe082"/>`;
+    // 筋（オレンジ）
+    svg += `<rect x="4" y="96" width="132" height="22" fill="#ed9b6a"/>`;
+    // 骨（オレンジ地に白い骨）
+    svg += `<rect x="4" y="118" width="132" height="28" fill="#e8895a"/>`;
+    svg += `<ellipse cx="40" cy="132" rx="26" ry="11" fill="#fdf3e0"/>`;
+    svg += `<ellipse cx="100" cy="132" rx="26" ry="11" fill="#fdf3e0"/>`;
+    svg += `<rect x="58" y="127" width="24" height="10" fill="#fdf3e0"/>`;
+    // ── 各段階固有の描画（損傷など） ──
+    svg += drawFn();
+    svg += `</svg>`;
+
+    return `<div style="background:var(--s1);border:1px solid var(--bd);border-radius:10px;overflow:hidden;margin-bottom:10px">
+      <div style="display:flex;align-items:stretch">
+        <div style="flex:0 0 130px;border-right:1px solid var(--bd)">
+          <div style="background:var(--s3);padding:6px 8px;text-align:center">
+            <div style="font-family:'DM Mono',monospace;font-size:1.05rem;font-weight:700;color:${lc}">${label}</div>
+            <div style="font-size:.6rem;color:var(--tx);line-height:1.3;margin-top:2px;min-height:2.4em">${title}</div>
+          </div>
+          ${svg}
+        </div>
+        <div style="flex:1;min-width:0;padding:9px 11px;display:flex;flex-direction:column;gap:6px">
+          <div style="font-size:.7rem;color:var(--tx);font-weight:500;line-height:1.5">${note}</div>
+          ${findings ? `<div style="font-size:.67rem;color:var(--mu);line-height:1.65;background:var(--s2);border-radius:7px;padding:7px 9px"><span style="color:${lc};font-weight:700;font-size:.62rem">▼ こう見える</span><br>${findings}</div>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }
+
+  // 損傷の窪み（白く抜く）。bottomY まで到達
+  function wound(bottomY, width) {
+    const cx = 70, top = 28, w = width || 56;
+    return `<path d="M ${cx - w/2} ${top}
+      Q ${cx - w/2} ${(top+bottomY)/2} ${cx - w/2 + 6} ${bottomY}
+      L ${cx + w/2 - 6} ${bottomY}
+      Q ${cx + w/2} ${(top+bottomY)/2} ${cx + w/2} ${top} Z"
+      fill="#ffffff" stroke="#d0d4dc" stroke-width="0.8"/>`;
+  }
+
+  const items = [
+    section('d0', '皮膚損傷・<br>発赤なし',
+      () => '', '皮膚に損傷や持続する発赤を認めない。', 'var(--ok)',
+      '皮膚は健常で、押しても消える一過性の発赤のみ。表面の傷・色調変化はなく、触れても周囲と同じ硬さ・温度。'),
+
+    section('d1', '持続する<br>発赤',
+      () => `<rect x="40" y="28" width="60" height="12" fill="#e57373" opacity="0.75"/>`,
+      '圧迫を除去しても消退しない発赤。表皮レベル。', 'var(--ok)',
+      '指で押しても白く消えない赤み（消退しない発赤）が境界明瞭に見える。皮膚表面は破れておらず、水疱やびらんはない。黒っぽい皮膚では赤より暗紫色・色素変化として現れることがある。'),
+
+    section('d2', '真皮までの<br>損傷',
+      () => wound(58, 60), 'びらん・水疱・浅い潰瘍。損傷が真皮内にとどまる。', 'var(--tx)',
+      '浅くえぐれた創で、創底は湿ったピンク〜赤色。水疱（水ぶくれ）やその破れた跡のびらん、薄い潰瘍として見える。脂肪組織（黄色）は見えず、深さは浅い。'),
+
+    section('D3', '皮下組織<br>までの損傷',
+      () => wound(94, 64), '潰瘍が皮下脂肪組織に達している。', 'var(--dg)',
+      '創縁から落ち込んだ深い潰瘍で、創底に黄色い皮下脂肪組織が見える。赤い肉芽や黄色いスラフ（壊死）が混在することも。筋肉・腱・骨は見えない。ポケット形成が始まることがある。'),
+
+    section('D4', '皮下組織を<br>超える損傷',
+      () => wound(116, 50), '皮下組織を超え、筋膜・筋肉・腱などに達する。', 'var(--dg)',
+      'さらに深く、創底に白っぽい筋膜や赤褐色の筋肉、白く光る腱が見える。脂肪層を超えており、壊死組織やポケットを伴うことが多い。出血しやすく、感染リスクが高い。'),
+
+    section('D5', '関節腔・体腔<br>に至る損傷',
+      () => wound(144, 34), '関節腔や体腔にまで達した最も深い状態。', 'var(--dg)',
+      '最も深い段階。創底に骨や関節包、体腔が露出して見える。'),
+
+    section('DDTI', '深部損傷褥瘡<br>(DTI)疑い',
+      () => `<rect x="40" y="28" width="60" height="12" fill="#f8bbd0" opacity="0.8"/>`
+          + `<ellipse cx="70" cy="80" rx="34" ry="26" fill="none" stroke="#e53935" stroke-width="2" stroke-dasharray="5 4"/>`
+          + `<text x="70" y="90" font-size="26" fill="#1a1a1a" text-anchor="middle" font-weight="bold" font-family="sans-serif">?</text>`,
+      '表面は軽症に見えても深部組織の損傷が疑われる（2020年版で追加）。経緯・血液検査・画像等で判断。', 'var(--pu)',
+      '皮膚表面は一見浅い発赤や軽い損傷に見えるが、限局した紫色〜暗赤色の変色、血疱、皮膚の硬結・冷感・熱感・疼痛など、深部に損傷を示唆する所見がある。数日で急速に深い潰瘍へ進行することがある。'),
+
+    section('DU', '壊死組織で<br>覆われ判定不能',
+      () => `<path d="M40 28 L100 28 L96 46 Q70 56 44 46 Z" fill="#2e2e2e"/>`
+          + `<ellipse cx="70" cy="84" rx="34" ry="26" fill="none" stroke="#e53935" stroke-width="2" stroke-dasharray="5 4"/>`
+          + `<text x="70" y="94" font-size="26" fill="#1a1a1a" text-anchor="middle" font-weight="bold" font-family="sans-serif">?</text>`,
+      '壊死組織で創底が覆われ深さ判定不能。デブリードマン後に再評価。', 'var(--dg)',
+      '創全体が黒色〜黄褐色の硬い壊死組織（エスカー）や厚いスラフで覆われ、創底が見えないため深さを判定できない。壊死組織を除去（デブリードマン）して初めて本当の深さがわかる。'),
+  ];
+
+  const intro = `<div style="background:color-mix(in srgb,var(--c-skin) 9%,var(--s2));border:1px solid color-mix(in srgb,var(--c-skin) 25%,transparent);border-radius:10px;padding:11px 13px;margin-bottom:12px">
+    <div style="font-size:.74rem;color:var(--tx);line-height:1.7">
+      創内の<strong style="color:var(--c-skin)">一番深い部分</strong>で評価します。創底が見えない場合は判定不能(DU)。<br>
+      改善に伴い創底が浅くなった場合は、相応する深さで評価します。<br>
+      <span style="color:var(--wn);font-size:.68rem">※深さ(D)の点数は合計に含めません。</span>
+    </div>
+  </div>`;
+
+  const legend = `<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;padding:0 2px;font-size:.64rem;color:var(--mu)">
+    <span style="display:inline-flex;align-items:center;gap:4px"><span style="width:11px;height:11px;background:#f6d9c8;border-radius:2px;display:inline-block"></span>表皮</span>
+    <span style="display:inline-flex;align-items:center;gap:4px"><span style="width:11px;height:11px;background:#ef9a9a;border-radius:2px;display:inline-block"></span>真皮</span>
+    <span style="display:inline-flex;align-items:center;gap:4px"><span style="width:11px;height:11px;background:#ffe082;border-radius:2px;display:inline-block"></span>脂肪組織</span>
+    <span style="display:inline-flex;align-items:center;gap:4px"><span style="width:11px;height:11px;background:#ed9b6a;border-radius:2px;display:inline-block"></span>筋</span>
+    <span style="display:inline-flex;align-items:center;gap:4px"><span style="width:11px;height:11px;background:#e8895a;border-radius:2px;display:inline-block"></span>骨</span>
+  </div>`;
+
+  const grid = `<div>${items.join('')}</div>
+    <div style="font-size:.62rem;color:var(--mu);margin-top:12px;padding:0 2px;line-height:1.6">
+      ※層構造と損傷到達深さの目安を示したオリジナル模式図です。実際の評価では創底の組織を直接観察してください。
+    </div>`;
+
+  return intro + legend + grid;
+}
+
+function doReset() { if (gResetFn) gResetFn(); }
+function doCopy() {
+  if (!gCopyFn) return;
+  const result = gCopyFn();
+  const t = wrapCopy(gScaleName, result);
+  navigator.clipboard.writeText(t).then(() => {
+    $('bcopy').textContent = '✓ コピー済';
+    $('bcopy').classList.add('done');
+    setTimeout(() => { $('bcopy').textContent = 'コピー'; $('bcopy').classList.remove('done'); }, 2000);
+  });
+}
+
+// ── カテゴリ定義 ─────────────────────────────
+const CATS = [
+  { id:'skin',  cc:'var(--c-skin)', icon:'🩹', title:'褥瘡',       sub:'重症度評価・発生リスク',      badges:['DESIGN-R®2020','OHスケール'],           scales:['designr','oh'] },
+  { id:'circ',  cc:'var(--c-circ)', icon:'💧', title:'循環・浮腫',  sub:'浮腫・脱水・心機能・水分管理',  badges:['浮腫','脱水','NYHA','TEE','不感蒸泄'],   scales:['edema','dehydration','nyha','tee','insensible'] },
+  { id:'eol',   cc:'var(--c-eol)',  icon:'🕊', title:'終末期',     sub:'予後予測・疼痛観察',           badges:['PPI','CPOT'],                          scales:['ppi','cpot'] },
+  { id:'excr',  cc:'var(--c-excr)', icon:'🔬', title:'排泄物観察', sub:'便性状・血尿',                badges:['ブリストル','血尿スケール'],               scales:['bristol','hematuria'] },
+  { id:'stoma', cc:'var(--c-stoma)',icon:'🟠', title:'ストーマ',   sub:'フィジカルアセスメント',        badges:['SPAツール'],                           scales:['spa'] },
+  { id:'cons',  cc:'var(--c-cons)', icon:'🧠', title:'意識レベル', sub:'JCS・GCS・RASS',             badges:['JCS','GCS','RASS'],                    scales:['jcs','gcs','rass'] },
+  { id:'emg',   cc:'var(--c-emg)',  icon:'⚡', title:'急変時問診', sub:'症状の系統的評価・脳血管疾患スクリーニング', badges:['OPQRST','SAMPLE','CPSS','LVO'], scales:['opqrst','sample','cpss','lvo'] },
+];
+const catOpen = {}, activeTab = {};
+const SCALE_NAMES = { designr:'DESIGN-R®2020', oh:'OHスケール', edema:'浮腫スコア', dehydration:'脱水身体所見', nyha:'NYHA分類', tee:'TEE (Harris-Benedict)', insensible:'不感蒸泄', jcs:'JCS', gcs:'GCS', rass:'RASS', bristol:'ブリストルスケール', hematuria:'血尿スケール', ppi:'PPI', cpot:'CPOT', spa:'SPAツール', opqrst:'OPQRST', sample:'SAMPLE', cpss:'CPSS（脳卒中スクリーニング）', lvo:'LVO観察（主幹動脈閉塞）' };
+
+function toggleCat(id) {
+  catOpen[id] = !catOpen[id];
+  const el = $('cat-'+id);
+  el.classList.toggle('open', catOpen[id]);
+  if (catOpen[id]) { if (!activeTab[id]) activeTab[id] = CATS.find(c=>c.id===id).scales[0]; initPanes(id); }
+}
+function switchTab(cid, sid) {
+  activeTab[cid] = sid;
+  CATS.find(c=>c.id===cid).scales.forEach(s => {
+    $('pane-'+s)?.classList.toggle('on', s===sid);
+    $('tab-'+s)?.classList.toggle('on', s===sid);
+  });
+  hideBar();
+}
+function initPanes(cid) {
+  const cat = CATS.find(c=>c.id===cid);
+  cat.scales.forEach(sid => {
+    const p = $('pane-'+sid); if (!p) return;
+    if (sid==='designr') p.innerHTML = buildDR();
+    else if (sid==='oh') p.innerHTML = buildOH();
+    else if (sid==='edema') p.innerHTML = buildEdema();
+    else if (sid==='dehydration') p.innerHTML = buildDehydration();
+    else if (sid==='nyha') p.innerHTML = buildNYHA();
+    else if (sid==='tee') p.innerHTML = buildTEE();
+    else if (sid==='insensible') p.innerHTML = buildInsensible();
+    else if (sid==='jcs') p.innerHTML = buildJCS();
+    else if (sid==='gcs') p.innerHTML = buildGCS();
+    else if (sid==='rass') p.innerHTML = buildRASS();
+    else if (sid==='bristol') p.innerHTML = buildBristol();
+    else if (sid==='hematuria') p.innerHTML = buildHematuria();
+    else if (sid==='ppi') p.innerHTML = buildPPI();
+    else if (sid==='cpot') p.innerHTML = buildCPOT();
+    else if (sid==='spa') p.innerHTML = buildSPA();
+    else if (sid==='opqrst') p.innerHTML = buildOPQRST();
+    else if (sid==='sample') p.innerHTML = buildSAMPLE();
+    else if (sid==='cpss') p.innerHTML = buildCPSS();
+    else if (sid==='lvo') p.innerHTML = buildLVO();
+    p.classList.toggle('on', sid===activeTab[cid]);
+  });
+}
+
+// ══════════════════════════════════════════════
+// DESIGN-R 2020
+// ══════════════════════════════════════════════
+const DR = [
+  { k:'D', n:'深さ', e:'Depth', nc:true,
+    h:'創内の一番深い部分で評価。改善に伴い創底が浅くなった場合はそれに相応する深さとして評価する',
+    imgBtn:true,
+    o:[
+      {v:0,  lb:'d0',   lc:'ok', tx:'皮膚損傷・発赤なし'},
+      {v:1,  lb:'d1',   lc:'',   tx:'持続する発赤'},
+      {v:2,  lb:'d2',   lc:'',   tx:'真皮までの損傷'},
+      {v:3,  lb:'D3',   lc:'hv', tx:'皮下組織までの損傷'},
+      {v:4,  lb:'D4',   lc:'hv', tx:'皮下組織を超える損傷'},
+      {v:5,  lb:'D5',   lc:'hv', tx:'関節腔、体腔に至る損傷'},
+      {v:'DTI',lb:'DDTI',lc:'pu',tx:'深部損傷褥瘡（DTI）疑い',tag:'tnew',tagTx:'2020新規',sub:'視診・触診、補助データ（発生経緯、血液検査、画像診断等）から判断する'},
+      {v:'U', lb:'DU',  lc:'hv', tx:'壊死組織で覆われ深さの判定が不能'},
+    ]
+  },
+  { k:'E', n:'滲出液', e:'Exudate', h:'ドレッシング交換の頻度で量を判定する。滲出液の急な増加は感染・炎症の悪化サインなので色・におい・粘性もあわせて観察する', o:[
+    {v:0,lb:'e0',lc:'ok',tx:'なし'},
+    {v:1,lb:'e1',lc:'',  tx:'少量：毎日のドレッシング交換を要しない'},
+    {v:3,lb:'e3',lc:'',  tx:'中等量：１日１回のドレッシング交換を要する'},
+    {v:6,lb:'E6',lc:'hv',tx:'多量：１日２回以上のドレッシング交換を要する',sub:'過剰な滲出は周囲皮膚の浸軟（ふやけ）を招くため皮膚保護が重要'},
+  ]},
+  { k:'S', n:'大きさ', e:'Size', h:'皮膚損傷範囲の長径と、それに直交する最大径を測定し掛け合わせる。毎回同じ体位・同じ部位で測ることで経時変化を正確に追える。持続する発赤の範囲も皮膚損傷に準じて測定する', o:[
+    {v:0, lb:'s0', lc:'ok',tx:'皮膚損傷なし'},
+    {v:3, lb:'s3', lc:'',  tx:'4cm²未満'},
+    {v:6, lb:'s6', lc:'',  tx:'4cm²以上　16cm²未満'},
+    {v:8, lb:'s8', lc:'',  tx:'16cm²以上　36cm²未満'},
+    {v:9, lb:'s9', lc:'',  tx:'36cm²以上　64cm²未満'},
+    {v:12,lb:'S12',lc:'hv',tx:'64cm²以上　100cm²未満'},
+    {v:15,lb:'S15',lc:'hv',tx:'100cm²以上'},
+  ]},
+  { k:'I', n:'炎症/感染', e:'Inflammation/Infection', h:'発赤・腫脹・熱感・疼痛の4徴候を確認する。I3CとI3はともに3点だが、I3C（臨界的定着）はバイオフィルムが疑われる段階で、創の改善が停滞しているのが特徴', o:[
+    {v:0,  lb:'i0', lc:'ok',tx:'局所の炎症徴候なし'},
+    {v:1,  lb:'i1', lc:'',  tx:'局所の炎症徴候あり', sub:'創周囲の発赤・腫脹・熱感・疼痛'},
+    {v:'I3C',lb:'I3C',lc:'hv',tx:'臨界的定着疑い',tag:'tnew',tagTx:'2020新規',sub:'創面のぬめり、多量の滲出液、浮腫性で脆弱な肉芽など（I3と同じく3点）',score:3},
+    {v:3,  lb:'I3', lc:'hv',tx:'局所の明らかな感染徴候あり', sub:'炎症徴候、膿、悪臭など。点数は3点'},
+    {v:9,  lb:'I9', lc:'hv',tx:'全身的影響あり（発熱など）',sub:'敗血症に進展する危険があり、速やかな医師報告が必要'},
+  ]},
+  { k:'G', n:'肉芽組織', e:'Granulation', h:'良性肉芽は鮮やかな赤色で適度な湿潤と弾力がある。蒼白・浮腫状・易出血性の肉芽は不良肉芽で、創治癒が進みにくい状態を示す', o:[
+    {v:0,lb:'g0',lc:'ok',tx:'創が治癒した場合、創の浅い場合、DTI疑いの場合'},
+    {v:1,lb:'g1',lc:'',  tx:'良性肉芽が創面の90%以上を占める'},
+    {v:3,lb:'g3',lc:'',  tx:'良性肉芽が創面の50%以上90%未満を占める'},
+    {v:4,lb:'G4',lc:'hv',tx:'良性肉芽が創面の10%以上50%未満を占める'},
+    {v:5,lb:'G5',lc:'hv',tx:'良性肉芽が創面の10%未満を占める'},
+    {v:6,lb:'G6',lc:'hv',tx:'良性肉芽が全く形成されていない'},
+  ]},
+  { k:'N', n:'壊死組織', e:'Necrotic tissue', h:'柔らかい黄色の壊死（スラフ）と、硬く黒い壊死（エスカー）を区別する。混在する場合は全体的に多い病態で評価する。壊死組織は感染源となり治癒を妨げるため除去（デブリードマン）の対象', o:[
+    {v:0,lb:'n0',lc:'ok',tx:'壊死組織なし'},
+    {v:3,lb:'n3',lc:'',  tx:'柔らかい壊死組織あり',sub:'黄色〜白色のスラフ。比較的除去しやすい'},
+    {v:6,lb:'N6',lc:'hv',tx:'硬く厚い密着した壊死組織あり',sub:'黒色のエスカー。深さの評価を妨げDUの原因となる'},
+  ]},
+  { k:'P', n:'ポケット', e:'Pocket', h:'創縁から皮下に広がる空洞。毎回同じ体位で、ポケットを含めた全周[長径×短径]から潰瘍面の大きさを差し引いて算出する。ずれ力（摩擦・剪断力）が主因なので、ポケットがあれば体位変換やポジショニングの見直しが必要', o:[
+    {v:0, lb:'p0', lc:'ok',tx:'ポケットなし'},
+    {v:6, lb:'p6', lc:'',  tx:'4cm²未満'},
+    {v:9, lb:'p9', lc:'',  tx:'4cm²以上　16cm²未満'},
+    {v:12,lb:'P12',lc:'hv',tx:'16cm²以上　36cm²未満'},
+    {v:24,lb:'P24',lc:'hv',tx:'36cm²以上'},
+  ]},
+];
+const drSt = {}; DR.forEach(it => drSt[it.k] = null);
+
+function drSel(el) {
+  const k = el.dataset.k;
+  const raw = el.dataset.v;
+  // 数値変換できるものは数値、それ以外は文字列
+  const v = (!isNaN(Number(raw)) && raw !== '') ? Number(raw) : raw;
+  drSt[k] = (drSt[k] === v) ? null : v;
+  rebuildDR();
+}
+
+function drOptCls(opt, sel) {
+  if (!sel) return '';
+  if (opt.lc==='ok') return 'c0';
+  if (opt.lc==='pu') return 'cp';
+  if (opt.lc==='hv') return 'cd';
+  return 'c1';
+}
+
+function drResult() {
+  let total = 0; const parts = [];
+  DR.forEach(it => {
+    const v = drSt[it.k];
+    if (v === null) { parts.push(it.k.toLowerCase()+'○'); return; }
+    const o = it.o.find(x => x.v === v);
+    parts.push(o.lb);
+    if (!it.nc) { const o2 = it.o.find(x=>x.v===v); if(o2) total += (typeof o2.score!=='undefined' ? o2.score : (typeof v==='number' ? v : 0)); }
+  });
+  return { parts, total };
+}
+
+function rebuildDR() {
+  const p = $('pane-designr'); if (!p) return;
+  p.innerHTML = buildDR();
+  const { parts, total } = drResult();
+  const txt = parts.join('-') + '：' + total + '点';
+  const dv = drSt['D'] !== null ? DR[0].o.find(x=>x.v===drSt['D']).lb : null;
+  // 重症度の目安（深さD以外の合計点で判断）
+  let sev = '';
+  const anySel = DR.some(it => drSt[it.k] !== null);
+  if (anySel) {
+    if (total >= 19) sev = '重症の目安（合計が高いほど治癒に時間を要する）';
+    else if (total >= 9) sev = '中等症の目安';
+    else sev = '軽症の目安';
+  }
+  const note = [dv ? '深さ：'+dv+'（合計に含めない）' : '', sev].filter(Boolean).join(' ｜ ');
+  showBar('合計', total+'点', txt, note, 'var(--c-skin)',
+    'DESIGN-R®2020',
+    () => txt,
+    () => { DR.forEach(it => drSt[it.k]=null); rebuildDR(); hideBar(); }
+  );
+}
+
+function buildDR() {
+  return DR.map(it => {
+    const sv = drSt[it.k];
+    const disp = sv!==null ? (it.nc ? it.o.find(x=>x.v===sv).lb : sv+'点') : '—';
+    return `<div class="sb${sv!==null?' sel':''}">
+      <div class="sh"><span class="sk">${it.k}</span>
+        <span class="sn">${it.n}<span class="se">${it.e}</span>${it.nc?'<span class="ncbadge">合計に含めない</span>':''}</span>
+        <span class="sv">${disp}</span></div>
+      ${it.h?`<div class="hint">${it.h}</div>`:''}
+      ${it.imgBtn?`<div style="padding:4px 12px 8px"><button onclick="showDepthGuide()" style="display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:7px;background:color-mix(in srgb,var(--c-skin) 14%,transparent);border:1px solid color-mix(in srgb,var(--c-skin) 40%,transparent);color:var(--c-skin);font-size:.72rem;font-weight:700;cursor:pointer;font-family:'Noto Sans JP',sans-serif;-webkit-tap-highlight-color:transparent">📐 深さ評価ガイドを開く</button></div>`:''}
+      <div class="opts">${it.o.map(o => {
+        const isSel = sv===o.v;
+        const vStr = String(o.v).replace(/"/g,'&quot;');
+        return `<div class="opt ${drOptCls(o,isSel)}" data-k="${it.k}" data-v="${vStr}" onclick="drSel(this)">
+          <span class="rdot"></span>
+          <span class="olbl ${o.lc}">${o.lb}</span>
+          <span class="otx">${o.tx}${o.tag?`<span class="otag ${o.tag}">${o.tagTx}</span>`:''}
+            ${o.sub?`<div class="osub">${o.sub}</div>`:''}
+          </span></div>`;
+      }).join('')}</div></div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════
+// OH スケール
+// ══════════════════════════════════════════════
+const OH = [
+  { k:'①', n:'自力体位変換能力', e:'自力体位変換',
+    h:'意識状態の低下・麻酔・安静度・麻痺などを考慮。完全に「できる」「できない」以外はすべて「どちらでもない」',
+    o:[
+      {v:0,  lb:'0点', lc:'ok', tx:'できる'},
+      {v:1.5,lb:'1.5点',lc:'',  tx:'どちらでもない'},
+      {v:3,  lb:'3点', lc:'hv', tx:'できない'},
+    ]
+  },
+  { k:'②', n:'病的骨突出（仙骨部）', e:'骨突出',
+    h:'骨突出中央から8cm離れた部位の高低差で判定。判定器（堀田式）を使用すると正確',
+    o:[
+      {v:0,  lb:'0点', lc:'ok', tx:'なし（高低差なし）'},
+      {v:1.5,lb:'1.5点',lc:'',  tx:'軽度・中程度（判定器がシーソー状になるが片脚は浮かない）'},
+      {v:3,  lb:'3点', lc:'hv', tx:'高度（判定器の片脚が離れる）'},
+    ]
+  },
+  { k:'③', n:'浮腫', e:'Edema',
+    h:'指でやさしく5秒押す → 離しても凹んだままなら「あり」',
+    o:[
+      {v:0, lb:'0点', lc:'ok', tx:'なし'},
+      {v:3, lb:'3点', lc:'hv', tx:'あり（圧迫後、凹みが残る）'},
+    ]
+  },
+  { k:'④', n:'関節拘縮', e:'Contracture',
+    o:[
+      {v:0, lb:'0点', lc:'ok', tx:'なし'},
+      {v:1, lb:'1点', lc:'hv', tx:'あり（部位・上下肢を問わず）'},
+    ]
+  },
+];
+const ohSt = {}; OH.forEach(it => ohSt[it.k] = null);
+
+function ohSel(k, v) { ohSt[k] = (ohSt[k]===v) ? null : v; rebuildOH(); }
+
+function ohRisk(total, allSel) {
+  if (!allSel || total === 0) return { lbl:'リスク評価中…', col:'var(--mu)', sub:'' };
+  if (total === 0)  return { lbl:'危険因子なし', col:'var(--ok)', sub:'体圧分散なし〜基本マットレス' };
+  if (total <= 3)   return { lbl:'軽度リスク', col:'var(--ok)', sub:'褥瘡発生確率 約4〜14%｜体圧分散マットレス（基本型）' };
+  if (total <= 6)   return { lbl:'中等度リスク', col:'var(--wn)', sub:'褥瘡発生確率 約26〜65%｜高機能マットレス推奨' };
+  return              { lbl:'高度リスク', col:'var(--dg)', sub:'褥瘡発生確率 約80〜98%｜最高機能マットレス＋厳重管理' };
+}
+
+function rebuildOH() {
+  const p = $('pane-oh'); if (!p) return;
+  p.innerHTML = buildOH();
+  let total = 0;
+  const parts = [];
+  const allSel = OH.every(it => ohSt[it.k] !== null);
+  OH.forEach(it => {
+    const v = ohSt[it.k];
+    if (v !== null) { total += v; parts.push(it.k+':'+v+'点'); }
+    else parts.push(it.k+':○');
+  });
+  const risk = ohRisk(total, allSel);
+  const txt = `OHスケール ${total}点 [${risk.lbl}]`;
+  if (!allSel && total === 0) { hideBar(); return; }
+  showBar('OH合計', total+'点', txt, risk.sub, 'var(--c-skin)',
+    'OHスケール',
+    () => txt,
+    () => { OH.forEach(it => ohSt[it.k]=null); rebuildOH(); hideBar(); }
+  );
+}
+
+function buildOH() {
+  const total = OH.reduce((s,it) => s + (ohSt[it.k]!==null ? ohSt[it.k] : 0), 0);
+  const allSel = OH.every(it => ohSt[it.k] !== null);
+  const risk = ohRisk(total, allSel);
+
+  const tbar = `<div class="tbar">
+    <div><div style="font-size:.6rem;color:var(--mu)">合計スコア</div>
+      <div class="tnum" style="color:${risk.col}">${total}</div></div>
+    <div><div class="trisk" style="color:${risk.col}">${risk.lbl}</div>
+      <div class="trsub">${risk.sub || '全項目を選択してください'}</div>
+      <div style="font-size:.6rem;color:var(--mu);margin-top:2px">最大10点 | 1〜3:軽度 / 4〜6:中等度 / 7〜10:高度</div>
+    </div></div>`;
+
+  const secs = OH.map(it => {
+    const sv = ohSt[it.k];
+    const disp = sv !== null ? sv+'点' : '—';
+    return `<div class="sb${sv!==null?' sel':''}">
+      <div class="sh"><span class="sk">${it.k}</span>
+        <span class="sn">${it.n}<span class="se">${it.e}</span></span>
+        <span class="sv">${disp}</span></div>
+      ${it.h?`<div class="hint">${it.h}</div>`:''}
+      <div class="opts">${it.o.map(o => {
+        const isSel = sv===o.v;
+        const cls = isSel ? (o.lc==='ok'?'c0':o.lc==='hv'?'cd':'c1') : '';
+        return `<div class="opt ${cls}" onclick="ohSel('${it.k}',${o.v})">
+          <span class="rdot"></span>
+          <span class="olbl ${o.lc}">${o.lb}</span>
+          <span class="otx">${o.tx}</span></div>`;
+      }).join('')}</div></div>`;
+  }).join('');
+
+  return tbar + secs;
+}
+
+// ══════════════════════════════════════════════
+// 浮腫スコア（完全作り直し・シンプル設計）
+// ══════════════════════════════════════════════
+const edSt = { grade:null, type:null, range:null, color:null, texture:null };
+
+let tmrIv=null, tmrT0=null, tmrSec=0, tmrOn=false;
+
+function tmrToggle() {
+  if (!tmrOn) {
+    tmrT0 = Date.now() - tmrSec*1000;
+    tmrIv = setInterval(tmrTick, 100);
+    tmrOn = true;
+    const btn = $('ed-tbtn'); if (btn) { btn.textContent='停止'; btn.className='tbtn tbtn-rs'; }
+  } else {
+    clearInterval(tmrIv); tmrOn = false;
+    const btn = $('ed-tbtn'); if (btn) { btn.textContent='再開'; btn.className='tbtn tbtn-go'; }
+  }
+}
+function tmrTick() {
+  tmrSec = (Date.now()-tmrT0)/1000;
+  const d=$('ed-tdisp'), j=$('ed-tjdg'); if (!d) return;
+  d.textContent = tmrSec.toFixed(1)+'s';
+  if (tmrSec < 40) { d.className='tdisp run'; if(j) j.innerHTML='<span style="color:var(--bl)">▶ fast edema（＜40秒）</span>'; }
+  else             { d.className='tdisp done'; if(j) j.innerHTML='<span style="color:var(--wn)">▶ slow edema（≥40秒）</span>'; }
+}
+function tmrReset() {
+  clearInterval(tmrIv); tmrOn=false; tmrSec=0;
+  const d=$('ed-tdisp'), j=$('ed-tjdg'), b=$('ed-tbtn');
+  if (d) { d.textContent='0.0s'; d.className='tdisp'; }
+  if (j) j.innerHTML='';
+  if (b) { b.textContent='計測開始'; b.className='tbtn tbtn-go'; }
+}
+
+function edSel(el) {
+  const id = el.dataset.id;
+  const raw = el.dataset.v;
+  // 数値に変換できる場合は数値として扱う
+  const v = raw === 'NPE' || raw === 'fast' || raw === 'slow' ? raw : (isNaN(Number(raw)) ? raw : Number(raw));
+  edSt[id] = (edSt[id]===v) ? null : v;
+  if (id==='grade' && v!==2 && v!==3) edSt.type = null;
+  rebuildEdema();
+}
+
+function edResultTxt() {
+  const site = ($('ed-site-inp')?.value.trim()) || '部位未記入';
+  const g = edSt.grade!==null ? (edSt.grade==='NPE'?'NPE':'grade'+edSt.grade) : '○';
+  const t = (edSt.grade===2||edSt.grade===3) ? (edSt.type?'('+edSt.type+')':'(○)') : '';
+  const r = edSt.range||'○', c = edSt.color||'○', k = edSt.texture||'○';
+  return `浮腫[${site}] ${g}${t} 範囲:${r} 色調:${c} 性状:${k}`;
+}
+
+function reEdResult() {
+  const g = edSt.grade;
+  if (g === null) { hideBar(); return; }
+  const grDisp = g==='NPE'?'NPE':'G'+g;
+  let interp = '';
+  if (g===0) interp='浮腫なし';
+  else if (g===1) interp='軽微（要観察）';
+  else if (g===2) interp='浮腫あり（中等度）'+(edSt.type==='fast'?'｜低Alb示唆':edSt.type==='slow'?'｜心腎不全等示唆':'');
+  else if (g===3) interp='浮腫あり（高度）'+(edSt.type==='fast'?'｜低Alb示唆':edSt.type==='slow'?'｜心腎不全等示唆':'');
+  else if (g==='NPE') interp='非圧痕性浮腫｜リンパ浮腫等を考慮';
+  const txt = edResultTxt();
+  showBar('グレード', grDisp, txt, interp, 'var(--c-circ)',
+    '浮腫観察スコア',
+    () => txt,
+    () => { Object.keys(edSt).forEach(k=>edSt[k]=null); tmrReset(); const si=$('ed-site-inp'); if(si) si.value=''; rebuildEdema(); hideBar(); }
+  );
+}
+
+function rebuildEdema() {
+  const p = $('pane-edema'); if (!p) return;
+  // 部位入力値を保持してから再生成
+  const siteVal = p.querySelector('#ed-site-inp')?.value || '';
+  p.innerHTML = buildEdema();
+  const siteEl = p.querySelector('#ed-site-inp');
+  if (siteEl) siteEl.value = siteVal;
+  reEdResult();
+}
+
+const ED_SECS = [
+  { id:'grade', k:'G', n:'gradeの判定', e:'Pitting Edema Grade（深沢変法）',
+    h:'脛骨前面末梢側1/3または足背を母指で10秒間圧迫し、圧痕の深さ・状態を評価する',
+    opts:[
+      {v:0,   lb:'grade 0',lc:'ok',tx:'圧痕なし、腫脹なし',cls:'c0'},
+      {v:1,   lb:'grade 1',lc:'',  tx:'圧迫解除でわずかにくぼみの輪郭がわかる程度',cls:'c1',sub:'時に見逃されてしまいそうな圧痕'},
+      {v:2,   lb:'grade 2',lc:'',  tx:'圧迫とともに明らかとなり、解除後に圧痕が残るもの',cls:'cw',sub:'→ 浮腫あり'},
+      {v:3,   lb:'grade 3',lc:'hv',tx:'視診・触診ですでに浮腫が明らかで、深い圧痕が残るもの',cls:'cd',sub:'→ 浮腫あり（高度）'},
+      {v:'NPE',lb:'NPE',   lc:'pu',tx:'圧痕を認めないが腫脹あり（non-pitting edema）',cls:'cp',sub:'リンパ浮腫・甲状腺機能亢進症などを考慮'},
+    ]
+  },
+  { id:'type', k:'T', n:'圧痕の戻り速度', e:'fast / slow edema',
+    h:'grade 2・3の場合のみ評価。上のタイマーで計測し40秒で分類する',
+    showIf: () => edSt.grade===2 || edSt.grade===3,
+    opts:[
+      {v:'fast',lb:'fast',lc:'bl',tx:'圧痕が40秒以内に回復',cls:'c1',tagHtml:'<span class="otag tfast">＜40秒</span>',sub:'低アルブミン血症（2.5g/dL以下）を示唆'},
+      {v:'slow',lb:'slow',lc:'',  tx:'圧痕が40秒以上かかって回復',cls:'cw',tagHtml:'<span class="otag tslow">≥40秒</span>',sub:'心不全・腎不全などを示唆'},
+    ]
+  },
+  { id:'range', k:'R', n:'浮腫の範囲', e:'Range', opts:[
+    {v:'足趾・足背のみ',lb:'限局',lc:'ok',tx:'足趾・足背のみ',cls:'c0'},
+    {v:'下腿遠位',      lb:'拡大',lc:'',  tx:'外果・下腿遠位まで',cls:'cw'},
+    {v:'下腿全体',      lb:'高度',lc:'hv',tx:'下腿全体（膝下まで）',cls:'cw'},
+    {v:'大腿以上',      lb:'全身',lc:'hv',tx:'大腿以上・全身性',cls:'cd'},
+  ]},
+  { id:'color', k:'C', n:'皮膚の色調', e:'Skin Color', opts:[
+    {v:'正常',  lb:'正常',lc:'ok',tx:'正常（変化なし）',cls:'c0'},
+    {v:'発赤',  lb:'発赤',lc:'',  tx:'発赤あり',cls:'cw',sub:'蜂窩織炎・DVTを考慮'},
+    {v:'褐色調',lb:'褐色',lc:'',  tx:'褐色調',cls:'cw',sub:'うっ滞性皮膚炎・慢性リンパ浮腫を示唆'},
+    {v:'暗赤色',lb:'暗赤',lc:'hv',tx:'暗赤色',cls:'cd',sub:'血管炎・壊死性筋膜炎を考慮'},
+    {v:'蒼白',  lb:'蒼白',lc:'',  tx:'蒼白・光沢あり',cls:'c1'},
+  ]},
+  { id:'texture', k:'K', n:'皮膚の性状', e:'Skin Texture', opts:[
+    {v:'正常',  lb:'正常',lc:'ok',tx:'つまみ上げ可能・弾力あり',cls:'c0'},
+    {v:'緊満',  lb:'緊満',lc:'',  tx:'皮膚が張っている・つまみにくい',cls:'cw'},
+    {v:'硬化',  lb:'硬化',lc:'hv',tx:'皮膚が硬化（線維化）',cls:'cd',sub:'慢性リンパ浮腫・進行例を示唆'},
+    {v:'潰瘍',  lb:'潰瘍',lc:'hv',tx:'潰瘍・びらんあり',cls:'cd'},
+  ]},
+];
+
+function buildEdema() {
+  const lrHtml = `<div style="margin-bottom:10px">
+    <div style="font-size:.63rem;color:var(--mu);margin-bottom:4px">部位（コピー時に反映）</div>
+    <input id="ed-site-inp" type="text" placeholder="例：脛骨前面、足背、仙骨部…"
+      oninput="reEdResult()"
+      style="width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:7px;padding:8px 10px;color:var(--tx);font-family:'Noto Sans JP',sans-serif;font-size:.78rem;outline:none;-webkit-appearance:none">
+  </div>`;
+
+  const timerHtml = `<div class="tmr">
+    <div><div style="font-size:.58rem;color:var(--mu);margin-bottom:2px">圧迫後経過時間</div>
+      <div class="tdisp" id="ed-tdisp">0.0s</div></div>
+    <div class="tinf"><strong>圧迫方法</strong>母指で約5mm・10秒間圧迫 → 離して計測
+      <div id="ed-tjdg" style="margin-top:3px;font-size:.68rem"></div></div>
+    <div class="tbtns">
+      <button class="tbtn tbtn-go" id="ed-tbtn" onclick="tmrToggle()">計測開始</button>
+      <button class="tbtn tbtn-rs" onclick="tmrReset()">リセット</button>
+    </div></div>`;
+
+  const secs = ED_SECS.map(sec => {
+    const isHidden = sec.showIf && !sec.showIf();
+    if (isHidden && edSt[sec.id] !== null) { edSt[sec.id] = null; }
+    const cv = edSt[sec.id];
+    const co = cv!==null ? sec.opts.find(o=>o.v===cv) : null;
+    const disp = co ? co.lb : '—';
+    return `<div class="sb${cv!==null?' sel':''}" data-sec-id="${sec.id}" style="${isHidden?'display:none':''}">
+      <div class="sh"><span class="sk">${sec.k}</span>
+        <span class="sn">${sec.n}<span class="se">${sec.e}</span></span>
+        <span class="sv">${disp}</span></div>
+      ${sec.h?`<div class="hint">${sec.h}</div>`:''}
+      <div class="opts">${sec.opts.map(o=>{
+        const isSel = cv===o.v;
+        const vStr = String(o.v).replace(/"/g,'&quot;');
+        return `<div class="opt${isSel?' '+o.cls:''}" data-id="${sec.id}" data-v="${vStr}" onclick="edSel(this)">
+          <span class="rdot"></span>
+          <span class="olbl ${o.lc}">${o.lb}</span>
+          <span class="otx">${o.tx}${o.tagHtml||''}${o.sub?`<div class="osub">${o.sub}</div>`:''}</span></div>`;
+      }).join('')}</div></div>`;
+  }).join('');
+
+  return lrHtml + timerHtml + secs;
+}
+
+// ══════════════════════════════════════════════
+// 脱水身体所見
+// ══════════════════════════════════════════════
+const DH_SECS = [
+  { id:'mucosa', k:'口', n:'口腔粘膜・舌', e:'Oral Mucosa',
+    h:'舌・口腔粘膜の乾燥を視診。口腔内に唾液の泡立ちがあれば湿潤の目安',
+    opts:[
+      {v:'湿潤',     lb:'湿潤',   lc:'ok', tx:'湿潤・光沢あり（正常）',                    cls:'c0'},
+      {v:'軽度乾燥', lb:'軽度乾燥',lc:'',   tx:'やや乾燥、唾液の泡立ち少ない',               cls:'cw'},
+      {v:'高度乾燥', lb:'高度乾燥',lc:'hv', tx:'口腔粘膜・舌が明らかに乾燥、亀裂あり',        cls:'cd'},
+    ]
+  },
+  { id:'turgor', k:'皮', n:'皮膚ツルゴール', e:'Skin Turgor',
+    h:'若者：手背、高齢者：前胸部（胸骨上）の皮膚をつまみ放す。戻り時間を評価する',
+    opts:[
+      {v:'2秒未満',  lb:'正常',   lc:'ok', tx:'2秒未満で元に戻る（正常）',                  cls:'c0'},
+      {v:'2-10秒',   lb:'低下',   lc:'',   tx:'2〜10秒かかって戻る → 脱水を疑う',           cls:'cw'},
+      {v:'10秒以上', lb:'著低下',  lc:'hv', tx:'10秒以上（ハンカチーフサイン陽性）→ 高度脱水', cls:'cd'},
+    ]
+  },
+  { id:'axilla', k:'腋', n:'腋窩の湿潤', e:'Axilla',
+    h:'腋窩に指を入れ湿潤を確認。乾燥は脱水の補助所見。高齢者で特に有用',
+    opts:[
+      {v:'湿潤',   lb:'湿潤', lc:'ok', tx:'湿潤あり（正常）',            cls:'c0'},
+      {v:'乾燥',   lb:'乾燥', lc:'hv', tx:'乾燥あり → 脱水を示唆',       cls:'cd'},
+    ]
+  },
+  { id:'eye', k:'眼', n:'眼窩の陥没・眼球張力', e:'Eyeball / Orbit',
+    h:'閉眼した状態で眼球を上から軽く押す。陥凹・軟らかさが脱水所見',
+    opts:[
+      {v:'正常',   lb:'正常', lc:'ok', tx:'陥没なし、眼球張力正常',         cls:'c0'},
+      {v:'軽度陥没',lb:'軽度', lc:'',  tx:'軽度陥没または眼球がやや軟らかい', cls:'cw'},
+      {v:'高度陥没',lb:'高度', lc:'hv', tx:'明らかな眼窩陥没・眼球軟化',     cls:'cd'},
+    ]
+  },
+  { id:'crt', k:'CRT', n:'毛細血管再充満時間', e:'Capillary Refill Time',
+    h:'爪床または指腹を5秒間白くなるまで押し，放後に赤みが戻るまでの時間を測定',
+    opts:[
+      {v:'2秒未満', lb:'正常', lc:'ok', tx:'2秒未満（正常）',              cls:'c0'},
+      {v:'2-3秒',   lb:'延長', lc:'',   tx:'2〜3秒 → 軽度の循環不全・脱水', cls:'cw'},
+      {v:'3秒以上', lb:'著延長',lc:'hv', tx:'3秒以上 → 高度脱水・ショックを疑う', cls:'cd'},
+    ]
+  },
+  { id:'urine', k:'尿', n:'尿量・尿色', e:'Urine Output / Color',
+    h:'脱水時は乏尿（0.5mL/kg/h未満）・濃縮尿になる。尿色は脱水の簡便な指標',
+    opts:[
+      {v:'淡黄色・量正常',  lb:'正常',   lc:'ok', tx:'淡黄色・量正常（30mL/h以上）', cls:'c0'},
+      {v:'濃黄色・減少',    lb:'濃縮尿', lc:'',   tx:'濃黄色〜橙色・尿量減少',       cls:'cw'},
+      {v:'暗褐色・無尿',    lb:'高度濃縮',lc:'hv', tx:'暗褐色・乏尿〜無尿',          cls:'cd'},
+    ]
+  },
+  { id:'vital', k:'VS', n:'バイタルサイン変化', e:'Vital Signs',
+    h:'脱水が中等度以上になると頻脈・血圧低下・起立性低血圧が現れる',
+    opts:[
+      {v:'変化なし',          lb:'安定',   lc:'ok', tx:'脈拍・血圧ともに正常範囲',           cls:'c0'},
+      {v:'頻脈（100以上）',   lb:'頻脈',   lc:'',   tx:'頻脈（HR≥100）あり', sub:'収縮期BP低下なし', cls:'cw'},
+      {v:'頻脈＋血圧低下',    lb:'BP低下', lc:'hv', tx:'頻脈＋収縮期BP低下または起立性低血圧', cls:'cd'},
+    ]
+  },
+  { id:'consciousness', k:'意', n:'意識・精神状態', e:'Consciousness',
+    h:'高張性脱水では口渇・神経症状が前景。重篤例では意識障害を来す',
+    opts:[
+      {v:'清明',   lb:'清明',   lc:'ok', tx:'清明（GCS 15）',                 cls:'c0'},
+      {v:'口渇強い',lb:'口渇',  lc:'',   tx:'強い口渇感・倦怠感・頭痛',         cls:'cw'},
+      {v:'意識障害',lb:'意識↓', lc:'hv', tx:'見当識障害・傾眠・興奮→ 高度脱水', cls:'cd'},
+    ]
+  },
+];
+
+const dhSt = {};
+DH_SECS.forEach(s => dhSt[s.id] = null);
+
+function dhSel(el) {
+  const id = el.dataset.id;
+  const v  = el.dataset.v;
+  dhSt[id] = (dhSt[id] === v) ? null : v;
+  rebuildDehydration();
+}
+
+function dhSeverity() {
+  const vals = Object.values(dhSt).filter(v => v !== null);
+  if (!vals.length) return null;
+  const cd = vals.filter(v => DH_SECS.flatMap(s=>s.opts).find(o=>o.v===v&&o.cls==='cd')).length;
+  const cw = vals.filter(v => DH_SECS.flatMap(s=>s.opts).find(o=>o.v===v&&o.cls==='cw')).length;
+  if (cd >= 2)       return { lbl:'高度脱水の疑い', col:'var(--dg)', sub:'医師への速やかな報告・輸液対応を検討' };
+  if (cd === 1 || cw >= 3) return { lbl:'中等度脱水の疑い', col:'var(--wn)', sub:'経口補水または輸液の適応を評価' };
+  if (cw >= 1)       return { lbl:'軽度脱水の可能性', col:'var(--ok)', sub:'経口水分補給を促す・継続観察' };
+  return               { lbl:'脱水所見なし', col:'var(--ok)', sub:'引き続き定期観察' };
+}
+
+function dhResultTxt() {
+  const parts = DH_SECS.map(s => {
+    const v = dhSt[s.id];
+    return v ? `${s.k}:${v}` : `${s.k}:○`;
+  });
+  const sev = dhSeverity();
+  return parts.join(' / ') + (sev ? `\n→ ${sev.lbl}` : '');
+}
+
+function redhResult() {
+  const sev = dhSeverity();
+  if (!sev) { hideBar(); return; }
+  const txt = dhResultTxt();
+  showBar('脱水判定', sev.lbl, txt, sev.sub, 'var(--c-circ)',
+    '脱水身体所見',
+    () => txt,
+    () => { DH_SECS.forEach(s => dhSt[s.id]=null); rebuildDehydration(); hideBar(); }
+  );
+}
+
+function rebuildDehydration() {
+  const p = $('pane-dehydration'); if (!p) return;
+  p.innerHTML = buildDehydration();
+  redhResult();
+}
+
+function buildDehydration() {
+  const sev = dhSeverity();
+  const tbar = sev ? `<div class="tbar">
+    <div style="flex-shrink:0">
+      <div style="font-size:.6rem;color:var(--mu)">総合判定</div>
+      <div style="font-family:'DM Mono',monospace;font-size:1.1rem;font-weight:500;color:${sev.col}">${sev.lbl}</div>
+    </div>
+    <div style="font-size:.68rem;color:var(--mu);line-height:1.5">${sev.sub}</div>
+  </div>` : `<div style="font-size:.68rem;color:var(--mu);padding:4px 2px 10px;line-height:1.6">
+    各項目を観察して選択してください。複数所見から総合的に脱水の重症度を判定します。<br>
+    <span style="color:var(--ok)">■</span>正常　<span style="color:var(--wn)">■</span>脱水疑い　<span style="color:var(--dg)">■</span>高度脱水
+  </div>`;
+
+  const secs = DH_SECS.map(sec => {
+    const cv = dhSt[sec.id];
+    const co = cv !== null ? sec.opts.find(o => o.v === cv) : null;
+    const disp = co ? co.lb : '—';
+    return `<div class="sb${cv !== null ? ' sel' : ''}">
+      <div class="sh">
+        <span class="sk">${sec.k}</span>
+        <span class="sn">${sec.n}<span class="se">${sec.e}</span></span>
+        <span class="sv">${disp}</span>
+      </div>
+      ${sec.h ? `<div class="hint">${sec.h}</div>` : ''}
+      <div class="opts">${sec.opts.map(o => {
+        const isSel = cv === o.v;
+        const vStr = o.v.replace(/"/g, '&quot;');
+        return `<div class="opt${isSel ? ' ' + o.cls : ''}" data-id="${sec.id}" data-v="${vStr}" onclick="dhSel(this)">
+          <span class="rdot"></span>
+          <span class="olbl ${o.lc}">${o.lb}</span>
+          <span class="otx">${o.tx}${o.sub ? `<div class="osub">${o.sub}</div>` : ''}</span>
+        </div>`;
+      }).join('')}</div>
+    </div>`;
+  }).join('');
+
+  return tbar + secs;
+}
+
+// ══════════════════════════════════════════════
+// OPQRST（急変時問診 — テキスト入力＋例示タップ）
+// ══════════════════════════════════════════════
+const OPQRST_ITEMS = [
+  { k:'O', n:'発症様式', e:'Onset',
+    h:'いつから？どのように始まった？（突然 / 徐々に / 何をしていた時？）',
+    ex:['突然発症','徐々に増悪','安静時','労作時','起床時'] },
+  { k:'P', n:'増悪・寛解因子', e:'Provocation / Palliation',
+    h:'何をすると悪化する？何をすると楽になる？体位、呼吸、食事、薬など',
+    ex:['体動で増悪','安静で軽快','前屈で軽快','食後に増悪','硝酸薬で軽快','吸気で増悪'] },
+  { k:'Q', n:'症状の性状', e:'Quality / Quantity',
+    h:'どんな感じ？（締め付け / 刺すような / 焼けるような / 鈍痛 / 拍動性 / 圧迫感）',
+    ex:['締め付け感','刺すような','焼けるような','鈍痛','拍動性','圧迫感','違和感'] },
+  { k:'R', n:'部位・放散', e:'Region / Radiation',
+    h:'どこが？他に痛みが広がる場所は？（左肩・顎・背部など放散の有無）',
+    ex:['胸部正中','左前胸部','左肩・顎へ放散','背部へ放散','心窩部','右季肋部'] },
+  { k:'S', n:'重症度', e:'Severity',
+    h:'NRS 0〜10で表現してもらう。「今まで感じた最大の痛みを10とすると？」',
+    ex:['NRS 2/10','NRS 5/10','NRS 8/10','NRS 10/10（最大）','安静で NRS 3'] },
+  { k:'T', n:'時間経過', e:'Time course',
+    h:'最初はどうで、それからどうなった？今は？（増悪傾向 / 改善 / 不変）',
+    ex:['発症後持続','間欠的','徐々に増悪','改善傾向','発作的（数分で消失）'] },
+];
+const opSt = {}; OPQRST_ITEMS.forEach(it => opSt[it.k] = '');
+
+function opInput(k) {
+  const el = $('op-inp-'+k); if (!el) return;
+  opSt[k] = el.value;
+  const qitem = el.closest('.qitem');
+  if (qitem) qitem.classList.toggle('filled', el.value.trim() !== '');
+  updateOPResult();
+}
+function opAddEx(k, txt) {
+  const el = $('op-inp-'+k); if (!el) return;
+  if (el.value && !el.value.endsWith(' ')) el.value += ' ';
+  el.value += txt + ' ';
+  opSt[k] = el.value;
+  el.closest('.qitem')?.classList.add('filled');
+  updateOPResult();
+}
+function updateOPResult() {
+  const parts = OPQRST_ITEMS.map(it => `${it.k}:${opSt[it.k].trim()||'○'}`);
+  const txt = 'OPQRST [' + parts.join(' / ') + ']';
+  const filled = OPQRST_ITEMS.some(it => opSt[it.k].trim());
+  if (!filled) { hideBar(); return; }
+  showBar('OPQRST', '記録中', txt, '', 'var(--c-emg)',
+    'OPQRST',
+    () => txt,
+    () => { OPQRST_ITEMS.forEach(it => { opSt[it.k]=''; const el=$('op-inp-'+it.k); if(el) el.value=''; el?.closest('.qitem')?.classList.remove('filled'); }); hideBar(); }
+  );
+}
+
+function buildOPQRST() {
+  return `<div style="font-size:.7rem;color:var(--mu);margin-bottom:10px;line-height:1.5;padding:2px 2px">例示タグをタップすると入力欄に追加されます。記録後はコピーボタンで転送できます。</div>` +
+  OPQRST_ITEMS.map(it => `
+  <div class="qitem${opSt[it.k].trim()?' filled':''}" id="qi-${it.k}">
+    <div class="qhdr"><span class="qkey">${it.k}</span>
+      <span class="qname">${it.n}<span class="qeng">${it.e}</span></span></div>
+    <div class="qbody">
+      <div class="qhint">${it.h}</div>
+      <div class="qexamples">${it.ex.map(e=>`<span class="qex" onclick="opAddEx('${it.k}','${e}')">${e}</span>`).join('')}</div>
+      <textarea class="qinp" id="op-inp-${it.k}" rows="2" placeholder="自由記載…" oninput="opInput('${it.k}')">${opSt[it.k]}</textarea>
+    </div></div>`).join('');
+}
+
+// ══════════════════════════════════════════════
+// SAMPLE
+// ══════════════════════════════════════════════
+const SAMPLE_ITEMS = [
+  { k:'S', n:'症状・主訴', e:'Signs & Symptoms',
+    h:'患者が今感じている症状。主訴を一言で。OPQRST で詳細評価する',
+    ex:['胸痛','呼吸困難','意識レベル低下','動悸','腹痛','嘔気・嘔吐','頭痛','めまい'] },
+  { k:'A', n:'アレルギー', e:'Allergies',
+    h:'薬物・食物・ラテックスなど。「なし」も記録する',
+    ex:['薬物アレルギーなし','ペニシリン系','NSAIDs','造影剤','ラテックス','食物アレルギーなし'] },
+  { k:'M', n:'内服薬', e:'Medications',
+    h:'現在内服中の薬（処方薬・OTC・サプリ含む）。抗凝固薬・インスリン・ステロイドは特に重要',
+    ex:['抗凝固薬あり','インスリン使用','ステロイド内服','降圧薬','抗血小板薬','内服なし'] },
+  { k:'P', n:'既往歴', e:'Pertinent Medical History',
+    h:'関連する過去の病気・手術・入院歴',
+    ex:['高血圧','糖尿病','心疾患','COPD','脳血管疾患','腎疾患','悪性腫瘍','手術歴あり'] },
+  { k:'L', n:'最終飲食', e:'Last Oral Intake',
+    h:'最後に食事・飲水した時間。全身麻酔・処置が必要な場合に重要',
+    ex:['本日朝食あり','数時間前に飲水のみ','昨夜21時に夕食','絶食中（入院前から）'] },
+  { k:'E', n:'発症経緯', e:'Events Leading Up',
+    h:'今日の発症前に何があったか。転倒・ストレス・活動状況など背景',
+    ex:['突然発症（誘因なし）','労作後に発症','転倒後','ストレス関連','食後に発症','起床後すぐ'] },
+];
+const smSt = {}; SAMPLE_ITEMS.forEach(it => smSt[it.k] = '');
+
+function smInput(k) {
+  const el = $('sm-inp-'+k); if (!el) return;
+  smSt[k] = el.value;
+  el.closest('.qitem')?.classList.toggle('filled', el.value.trim() !== '');
+  updateSMResult();
+}
+function smAddEx(k, txt) {
+  const el = $('sm-inp-'+k); if (!el) return;
+  if (el.value && !el.value.endsWith(' ')) el.value += ' ';
+  el.value += txt + ' ';
+  smSt[k] = el.value;
+  el.closest('.qitem')?.classList.add('filled');
+  updateSMResult();
+}
+function updateSMResult() {
+  const parts = SAMPLE_ITEMS.map(it => `${it.k}:${smSt[it.k].trim()||'○'}`);
+  const txt = 'SAMPLE [' + parts.join(' / ') + ']';
+  const filled = SAMPLE_ITEMS.some(it => smSt[it.k].trim());
+  if (!filled) { hideBar(); return; }
+  showBar('SAMPLE', '記録中', txt, '', 'var(--c-emg)',
+    'SAMPLE',
+    () => txt,
+    () => { SAMPLE_ITEMS.forEach(it => { smSt[it.k]=''; const el=$('sm-inp-'+it.k); if(el) el.value=''; el?.closest('.qitem')?.classList.remove('filled'); }); hideBar(); }
+  );
+}
+
+function buildSAMPLE() {
+  return `<div style="font-size:.7rem;color:var(--mu);margin-bottom:10px;line-height:1.5;padding:2px 2px">例示タグをタップすると入力欄に追加されます。記録後はコピーボタンで転送できます。</div>` +
+  SAMPLE_ITEMS.map(it => `
+  <div class="qitem${smSt[it.k].trim()?' filled':''}" id="sm-${it.k}">
+    <div class="qhdr"><span class="qkey">${it.k}</span>
+      <span class="qname">${it.n}<span class="qeng">${it.e}</span></span></div>
+    <div class="qbody">
+      <div class="qhint">${it.h}</div>
+      <div class="qexamples">${it.ex.map(e=>`<span class="qex" onclick="smAddEx('${it.k}','${e}')">${e}</span>`).join('')}</div>
+      <textarea class="qinp" id="sm-inp-${it.k}" rows="2" placeholder="自由記載…" oninput="smInput('${it.k}')">${smSt[it.k]}</textarea>
+    </div></div>`).join('');
+}
+
+
+// ══════════════════════════════════════════════
+// CPSS（シンシナティ病院前脳卒中スケール）
+// + 脳卒中を疑う付加症状チェック
+// ══════════════════════════════════════════════
+const CPSS_ITEMS = [
+  { id:'face', k:'顔', n:'顔面のゆがみ', e:'Facial Droop',
+    h:'「歯を見せてください」または「笑ってください」と指示する。顔面が左右対称に動くか確認する',
+    opts:[
+      {v:'正常',lb:'正常',lc:'ok',cls:'c0',tx:'両側が等しく動く（左右対称）'},
+      {v:'異常',lb:'異常',lc:'hv',cls:'cd',tx:'片側がもう一側のように動かない（片側顔面麻痺）'},
+    ]
+  },
+  { id:'arm', k:'上肢', n:'上肢挙上', e:'Arm Drift',
+    h:'「目を閉じて、両腕をまっすぐ前に伸ばしてください」と指示し10秒間保持させる',
+    opts:[
+      {v:'正常',lb:'正常',lc:'ok',cls:'c0',tx:'両側とも同様に挙上、またはまったく挙がらない'},
+      {v:'異常',lb:'異常',lc:'hv',cls:'cd',tx:'片方が挙がらない、または他側と比べてふらふらと下がる'},
+    ]
+  },
+  { id:'speech', k:'言語', n:'構音・言語', e:'Abnormal Speech',
+    h:'「瑠璃も玻璃も照らせば光る」などの文章を繰り返すよう指示する',
+    opts:[
+      {v:'正常',lb:'正常',lc:'ok',cls:'c0',tx:'正しい言葉を明瞭に話す'},
+      {v:'異常',lb:'異常',lc:'hv',cls:'cd',tx:'不明瞭な言葉・間違った言葉・まったく話せない'},
+    ]
+  },
+];
+
+// 付加症状（脳卒中を強く示唆する随伴症状）
+const CPSS_ADD = [
+  {id:'onset',   tx:'突然の発症（発症時刻が特定できる）'},
+  {id:'headache',tx:'経験したことのない激しい頭痛'},
+  {id:'vision',  tx:'片眼が見えない・物が二重に見える・視野の半分が欠ける'},
+  {id:'gait',    tx:'力はあるのに立てない・歩けない・フラフラする'},
+  {id:'limb',    tx:'片方の手足・顔半分の麻痺・しびれ'},
+];
+
+const cpSt = {}; CPSS_ITEMS.forEach(s=>cpSt[s.id]=null);
+const cpAdd = {}; CPSS_ADD.forEach(s=>cpAdd[s.id]=false);
+
+function cpSel(el) {
+  const id=el.dataset.id, v=el.dataset.v;
+  cpSt[id] = cpSt[id]===v ? null : v;
+  rebuildCPSS();
+}
+function cpToggle(id) {
+  cpAdd[id] = !cpAdd[id];
+  rebuildCPSS();
+}
+
+function cpResult() {
+  const pos = CPSS_ITEMS.filter(it=>cpSt[it.id]==='異常').length;
+  const addPos = CPSS_ADD.filter(it=>cpAdd[it.id]).map(it=>it.tx);
+  const allSet = CPSS_ITEMS.every(it=>cpSt[it.id]!==null);
+  if (!allSet && pos===0) return null;
+  const positive = pos > 0;
+  return {
+    positive,
+    pos,
+    addPos,
+    lbl: positive ? 'CPSS陽性（脳卒中を強く疑う）' : 'CPSS陰性',
+    col: positive ? 'var(--dg)' : 'var(--ok)',
+    sub: positive ? `${pos}項目陽性 → 直ちに専門医療機関への搬送を検討。発症時刻を確認。` : '3項目すべて正常。他の随伴症状も確認する。'
+  };
+}
+
+function rebuildCPSS() {
+  const p=$('pane-cpss'); if(p) p.innerHTML=buildCPSS();
+  const r = cpResult(); if(!r){hideBar();return;}
+  const addStr = r.addPos.length ? '\n随伴症状: '+r.addPos.join(' / ') : '';
+  const face = cpSt.face||'○', arm = cpSt.arm||'○', speech = cpSt.speech||'○';
+  const txt = `CPSS [顔:${face} 上肢:${arm} 言語:${speech}] → ${r.lbl}${addStr}`;
+  showBar('CPSS', r.lbl, txt, r.sub, 'var(--c-emg)',
+    'CPSS（シンシナティ病院前脳卒中スケール）', () => txt,
+    () => { CPSS_ITEMS.forEach(s=>cpSt[s.id]=null); CPSS_ADD.forEach(s=>cpAdd[s.id]=false); rebuildCPSS(); hideBar(); }
+  );
+}
+
+function buildCPSS() {
+  const r = cpResult();
+  const banner = `<div style="background:color-mix(in srgb,var(--c-emg) 8%,var(--s3));border:1px solid color-mix(in srgb,var(--c-emg) 25%,transparent);border-radius:9px;padding:10px 13px;margin-bottom:10px">
+    <div style="font-size:.72rem;font-weight:700;color:var(--c-emg);margin-bottom:3px">🧠 脳血管疾患（脳卒中）を疑う際に使用</div>
+    <div style="font-size:.66rem;color:var(--mu);line-height:1.6">1項目でも異常があれば脳卒中の可能性が高い（感度72〜86%）。<br>発症時刻の確認と速やかな専門医への報告・搬送調整を行う。</div>
+  </div>`;
+
+  const resultBar = r ? `<div class="tbar">
+    <div><div style="font-size:.6rem;color:var(--mu)">判定</div>
+      <div style="font-family:'DM Mono',monospace;font-size:.95rem;font-weight:700;color:${r.col}">${r.lbl}</div></div>
+    <div style="font-size:.67rem;color:var(--mu);line-height:1.5">${r.sub}</div>
+  </div>` : '';
+
+  const secs = CPSS_ITEMS.map(sec => {
+    const cv = cpSt[sec.id];
+    return `<div class="sb${cv?' sel':''}">
+      <div class="sh"><span class="sk">${sec.k}</span>
+        <span class="sn">${sec.n}<span class="se">${sec.e}</span></span>
+        <span class="sv" style="color:${cv==='異常'?'var(--dg)':cv==='正常'?'var(--ok)':'var(--mu)'}">${cv||'—'}</span>
+      </div>
+      <div class="hint">${sec.h}</div>
+      <div class="opts">${sec.opts.map(o=>{
+        const isSel=cv===o.v;
+        return `<div class="opt${isSel?' '+o.cls:''}" data-id="${sec.id}" data-v="${o.v}" onclick="cpSel(this)">
+          <span class="rdot"></span>
+          <span class="olbl ${o.lc}">${o.lb}</span>
+          <span class="otx">${o.tx}</span></div>`;
+      }).join('')}</div></div>`;
+  }).join('');
+
+  const addChecks = `<div class="sb">
+    <div class="sh"><span class="sk" style="font-size:.78rem">随伴</span>
+      <span class="sn">脳卒中を示唆する随伴症状<span class="se">Additional Symptoms</span></span></div>
+    <div style="padding:7px 10px 10px;display:flex;flex-direction:column;gap:5px">
+      ${CPSS_ADD.map(it=>`
+      <div onclick="cpToggle('${it.id}')" style="display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:7px;border:1px solid ${cpAdd[it.id]?'rgba(239,138,96,.5)':'var(--bd)'};background:${cpAdd[it.id]?'rgba(239,138,96,.08)':'transparent'};cursor:pointer;-webkit-tap-highlight-color:transparent">
+        <span style="width:18px;height:18px;border-radius:4px;border:2px solid ${cpAdd[it.id]?'var(--c-emg)':'var(--mu)'};background:${cpAdd[it.id]?'var(--c-emg)':'transparent'};flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.7rem;color:#0c1018">${cpAdd[it.id]?'✓':''}</span>
+        <span style="font-size:.76rem;line-height:1.4">${it.tx}</span>
+      </div>`).join('')}
+    </div>
+  </div>`;
+
+  return banner + resultBar + secs + addChecks;
+}
+
+// ══════════════════════════════════════════════
+// LVO観察（主幹動脈閉塞スクリーニング）
+// 日本脳卒中学会提言 6項目（令和4年）
+// ══════════════════════════════════════════════
+const LVO_ITEMS = [
+  { id:'pulse',   k:'脈', n:'脈不整', e:'Irregular Pulse',
+    h:'橈骨動脈を触診し脈のリズムを確認。心房細動は心原性脳塞栓（LVO）の主要原因',
+    opts:[
+      {v:'整',  lb:'整',  lc:'ok',cls:'c0',tx:'脈拍リズム整（正常）'},
+      {v:'不整',lb:'不整',lc:'hv',cls:'cd',tx:'脈不整あり（心房細動を疑う）'},
+    ]
+  },
+  { id:'gaze',    k:'眼球', n:'共同偏視', e:'Conjugate Gaze Deviation',
+    h:'正面を見てもらい眼球が一側に偏っていないか確認。大脳半球または橋の病変を示唆する',
+    opts:[
+      {v:'なし',lb:'なし',lc:'ok',cls:'c0',tx:'眼球正中位（正常）'},
+      {v:'あり',lb:'あり',lc:'hv',cls:'cd',tx:'共同偏視あり → 大脳または橋の大きな病変を示唆'},
+    ]
+  },
+  { id:'neglect', k:'無視', n:'半側空間無視', e:'Hemispatial Neglect',
+    h:'検者が指4本を患者の正面に出し「指は何本ですか？」と質問。4本と答えられなければ陽性',
+    opts:[
+      {v:'なし',lb:'なし',lc:'ok',cls:'c0',tx:'指4本を正答（正常）'},
+      {v:'あり',lb:'あり',lc:'hv',cls:'cd',tx:'指の本数を誤答 → 半側空間無視を疑う'},
+    ]
+  },
+  { id:'aphasia', k:'失語', n:'失語', e:'Aphasia',
+    h:'眼鏡または時計を見せて「これは何ですか？」と質問。答えられなければ失語陽性（呼称障害）',
+    opts:[
+      {v:'なし',lb:'なし',lc:'ok',cls:'c0',tx:'正しく呼称できる（正常）'},
+      {v:'あり',lb:'あり',lc:'hv',cls:'cd',tx:'呼称できない・誤答 → 失語を疑う（優位半球障害）'},
+    ]
+  },
+  { id:'facepal', k:'顔麻', n:'顔面麻痺', e:'Facial Palsy',
+    h:'「歯を見せて」と指示。片側顔面の下垂・非対称が陽性',
+    opts:[
+      {v:'なし',lb:'なし',lc:'ok',cls:'c0',tx:'顔面対称（正常）'},
+      {v:'あり',lb:'あり',lc:'hv',cls:'cd',tx:'顔面麻痺あり（片側下垂・非対称）'},
+    ]
+  },
+  { id:'armpal',  k:'上肢麻', n:'上肢麻痺', e:'Arm Palsy',
+    h:'両腕を前に伸ばし10秒保持。片側の下垂・脱力が陽性',
+    opts:[
+      {v:'なし',lb:'なし',lc:'ok',cls:'c0',tx:'両側均等に保持（正常）'},
+      {v:'あり',lb:'あり',lc:'hv',cls:'cd',tx:'片側の下垂・脱力あり'},
+    ]
+  },
+];
+
+const lvoSt = {}; LVO_ITEMS.forEach(s=>lvoSt[s.id]=null);
+
+function lvoSel(el) {
+  const id=el.dataset.id, v=el.dataset.v;
+  lvoSt[id] = lvoSt[id]===v ? null : v;
+  rebuildLVO();
+}
+
+function lvoCount() {
+  return LVO_ITEMS.filter(it=>lvoSt[it.id]==='あり').length;
+}
+
+function lvoJudge(n) {
+  if (n===0) return {lbl:'LVO陰性の可能性', col:'var(--ok)', sub:'陽性項目なし。引き続き観察を継続する。'};
+  if (n===1) return {lbl:'要注意（1項目陽性）', col:'var(--wn)', sub:'感度重視なら血栓回収療法対応施設への搬送を検討。'};
+  if (n>=2)  return {lbl:'LVO強く疑う（2項目以上陽性）', col:'var(--dg)', sub:'血栓回収療法（EVT）対応施設への直接搬送を考慮。発症時刻・最終未発症時刻を確認。'};
+}
+
+function rebuildLVO() {
+  const p=$('pane-lvo'); if(p) p.innerHTML=buildLVO();
+  const n=lvoCount();
+  const anySet=LVO_ITEMS.some(it=>lvoSt[it.id]!==null);
+  if(!anySet){hideBar();return;}
+  const j=lvoJudge(n);
+  const parts=LVO_ITEMS.map(it=>`${it.k}:${lvoSt[it.id]||'○'}`).join(' ');
+  const txt=`LVO観察 ${n}/6項目陽性 [${j.lbl}]\n${parts}`;
+  showBar('LVO', n+'/6陽性', txt, j.sub, 'var(--c-emg)',
+    'LVO観察（主幹動脈閉塞スクリーニング）', () => txt,
+    () => { LVO_ITEMS.forEach(s=>lvoSt[s.id]=null); rebuildLVO(); hideBar(); }
+  );
+}
+
+function buildLVO() {
+  const n=lvoCount();
+  const anySet=LVO_ITEMS.some(it=>lvoSt[it.id]!==null);
+  const j=anySet ? lvoJudge(n) : null;
+
+  const banner = `<div style="background:color-mix(in srgb,var(--c-emg) 8%,var(--s3));border:1px solid color-mix(in srgb,var(--c-emg) 25%,transparent);border-radius:9px;padding:10px 13px;margin-bottom:10px">
+    <div style="font-size:.72rem;font-weight:700;color:var(--c-emg);margin-bottom:3px">🧠 脳血管疾患（主幹動脈閉塞）を疑う際に使用</div>
+    <div style="font-size:.66rem;color:var(--mu);line-height:1.6">CPSSで脳卒中陽性後、さらにLVO（Large Vessel Occlusion）の有無を評価する。<br>日本脳卒中学会提言6項目（令和4年）。<strong style="color:var(--tx)">2項目以上陽性でEVT対応施設への直接搬送を考慮</strong>。</div>
+  </div>`;
+
+  // スコアバー
+  const scorebar = `<div class="tbar">
+    <div><div style="font-size:.6rem;color:var(--mu)">陽性項目数</div>
+      <div style="font-family:'DM Mono',monospace;font-size:1.8rem;font-weight:500;color:${j?j.col:'var(--mu)'}">
+        ${n}<span style="font-size:.9rem;color:var(--mu)"> / 6</span></div></div>
+    <div><div style="font-size:.8rem;font-weight:700;color:${j?j.col:'var(--mu)'}">${j?j.lbl:'評価中…'}</div>
+      <div style="font-size:.64rem;color:var(--mu);margin-top:2px">${j?j.sub:'各項目を観察して選択してください'}</div>
+      <div style="font-size:.6rem;color:var(--mu);margin-top:2px">2項目：感度重視 / 3項目：特異度重視（地域体制に応じて選択）</div>
+    </div></div>`;
+
+  const secs = LVO_ITEMS.map(sec=>{
+    const cv=lvoSt[sec.id];
+    return `<div class="sb${cv?' sel':''}">
+      <div class="sh"><span class="sk" style="font-size:.78rem;min-width:34px">${sec.k}</span>
+        <span class="sn">${sec.n}<span class="se">${sec.e}</span></span>
+        <span class="sv" style="color:${cv==='あり'?'var(--dg)':cv==='なし'?'var(--ok)':'var(--mu)'}">${cv||'—'}</span>
+      </div>
+      <div class="hint">${sec.h}</div>
+      <div class="opts">${sec.opts.map(o=>{
+        const isSel=cv===o.v;
+        return `<div class="opt${isSel?' '+o.cls:''}" data-id="${sec.id}" data-v="${o.v}" onclick="lvoSel(this)">
+          <span class="rdot"></span>
+          <span class="olbl ${o.lc}">${o.lb}</span>
+          <span class="otx">${o.tx}</span></div>`;
+      }).join('')}</div></div>`;
+  }).join('');
+
+  return banner + scorebar + secs;
+}
+
+
+// ══════════════════════════════════════════════
+// NYHA 心機能分類
+// ══════════════════════════════════════════════
+let nyhaSt = null;
+function nyhaSelect(el) {
+  const v = Number(el.dataset.v);
+  nyhaSt = nyhaSt === v ? null : v;
+  rebuildNYHA();
+}
+function rebuildNYHA() {
+  const p = $('pane-nyha'); if (p) p.innerHTML = buildNYHA();
+  if (nyhaSt === null) { hideBar(); return; }
+  const labels = {1:'クラスI',2:'クラスII',3:'クラスIII',4:'クラスIV'};
+  const subs = {1:'日常生活に制限なし',2:'軽度〜中等度の制限',3:'高度の制限',4:'安静時にも症状あり'};
+  const txt = `NYHA ${labels[nyhaSt]} [${subs[nyhaSt]}]`;
+  showBar('NYHA', labels[nyhaSt], txt, subs[nyhaSt], 'var(--c-circ)',
+    'NYHA心機能分類', () => txt,
+    () => { nyhaSt=null; rebuildNYHA(); hideBar(); }
+  );
+}
+function buildNYHA() {
+  const opts = [
+    {v:1,lb:'Class I', lc:'ok', cls:'c0', tx:'心疾患はあるが、身体活動に制限なし', sub:'日常的な身体活動で疲労・動悸・呼吸困難・狭心症状が生じない'},
+    {v:2,lb:'Class II',lc:'',  cls:'c1', tx:'軽度〜中等度の身体活動制限', sub:'安静時は無症状。日常的な身体活動で疲労・動悸・呼吸困難・狭心症状が生じる'},
+    {v:3,lb:'Class III',lc:'hv',cls:'cw', tx:'高度の身体活動制限', sub:'安静時は無症状。日常以下の軽労作（平地歩行など）でも症状が生じる'},
+    {v:4,lb:'Class IV',lc:'hv',cls:'cd', tx:'安静時にも心不全症状・狭心症状あり', sub:'少しでも身体活動を行うと症状が増強する。入院管理が必要なことも多い'},
+  ];
+  const sbar = `<div class="tbar" style="flex-direction:column;align-items:flex-start;gap:4px">
+    <div style="font-size:.6rem;color:var(--mu)">NYHA心機能分類（New York Heart Association）</div>
+    <div style="font-size:.68rem;color:var(--mu);line-height:1.5">自覚症状をもとに心不全の重症度を4段階で分類。治療により改善・悪化が双方向に起こりうる（可逆的）。</div>
+  </div>`;
+  const items = opts.map(o => {
+    const isSel = nyhaSt === o.v;
+    return `<div class="opt${isSel?' '+o.cls:''}" data-v="${o.v}" onclick="nyhaSelect(this)">
+      <span class="rdot"></span>
+      <span class="olbl ${o.lc}">${o.lb}</span>
+      <span class="otx">${o.tx}<div class="osub">${o.sub}</div></span></div>`;
+  }).join('');
+  return sbar + `<div class="sb" style="margin-top:0"><div class="opts">${items}</div></div>`;
+}
+
+// ══════════════════════════════════════════════
+// TEE（Total Energy Expenditure）Harris-Benedict式
+// BEE × 活動係数 × ストレス係数
+// ══════════════════════════════════════════════
+function calcTEE() {
+  const sex   = document.querySelector('input[name="tee-sex"]:checked')?.value;
+  const w     = parseFloat($('tee-weight')?.value);
+  const h     = parseFloat($('tee-height')?.value);
+  const age   = parseFloat($('tee-age')?.value);
+  const af    = parseFloat($('tee-af')?.value   || 1.2);
+  const sf    = parseFloat($('tee-sf')?.value   || 1.0);
+  const resEl = $('tee-result');
+  if (!resEl) return;
+
+  if (!sex || isNaN(w) || isNaN(h) || isNaN(age) || w<=0 || h<=0 || age<=0) {
+    resEl.innerHTML = '<span style="font-size:.7rem;color:var(--mu)">性別・体重・身長・年齢をすべて入力してください</span>';
+    hideBar(); return;
+  }
+
+  // Harris-Benedict式（原版 1919）
+  let bee;
+  if (sex === 'male') {
+    bee = 66.47 + 13.75*w + 5.00*h - 6.76*age;
+  } else {
+    bee = 655.10 + 9.56*w + 1.85*h - 4.68*age;
+  }
+  const tee = Math.round(bee * af * sf);
+  const bee_r = Math.round(bee);
+  const ree   = Math.round(bee * 1.2); // REE = BEE × 1.2
+
+  resEl.innerHTML = `
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:10px">
+      <div>
+        <div style="font-size:.58rem;color:var(--mu)">TEE（総エネルギー消費量）</div>
+        <div style="font-family:'DM Mono',monospace;font-size:2rem;font-weight:500;color:var(--c-circ)">
+          ${tee}<span style="font-size:.8rem;color:var(--mu)"> kcal/日</span></div>
+      </div>
+      <div style="font-size:.72rem;color:var(--mu);line-height:2">
+        BEE：${bee_r} kcal/日<br>
+        REE（BEE×1.2）：${ree} kcal/日<br>
+        活動係数(AF)：${af}　ストレス係数(SF)：${sf}
+      </div>
+    </div>
+    <div style="background:var(--s3);border-radius:7px;padding:8px 10px;font-size:.65rem;color:var(--mu);line-height:1.8">
+      <span style="color:var(--tx);font-weight:500">式：TEE = BEE × AF × SF</span><br>
+      ${sex==='male'?'男性':'女性'} BEE = ${sex==='male'?'66.47 + 13.75×W + 5.00×H − 6.76×A':'655.10 + 9.56×W + 1.85×H − 4.68×A'}<br>
+      W=${w}kg, H=${h}cm, A=${age}歳<br>
+      <span style="color:var(--wn);font-size:.6rem">※原版は欧米人対象（体重25〜125kg・身長151〜200cm・年齢21〜70歳）。参考値として使用すること。</span>
+    </div>`;
+
+  const txt = `TEE ${tee}kcal/日（BEE:${bee_r}kcal × AF:${af} × SF:${sf} / ${sex==='male'?'男':'女'} ${w}kg ${h}cm ${age}歳）`;
+  showBar('TEE', tee+'kcal', txt, `BEE ${bee_r}kcal × AF${af} × SF${sf}`, 'var(--c-circ)',
+    'TEE（Harris-Benedict式）', () => txt,
+    () => {
+      ['tee-weight','tee-height','tee-age'].forEach(id => { const el=$(id); if(el) el.value=''; });
+      const af_el=$('tee-af'), sf_el=$('tee-sf');
+      if(af_el) af_el.value='1.2'; if(sf_el) sf_el.value='1.0';
+      const m=document.querySelector('input[name="tee-sex"][value="male"]');
+      if(m) m.checked=true;
+      const r=$('tee-result'); if(r) r.innerHTML='<span style="font-size:.7rem;color:var(--mu)">性別・体重・身長・年齢をすべて入力してください</span>';
+      hideBar();
+    }
+  );
+}
+
+function buildTEE() {
+  const inStyle = 'width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:7px;padding:8px 10px;color:var(--tx);font-size:.88rem;font-family:"DM Mono",monospace;outline:none;-webkit-appearance:none';
+  const selStyle = inStyle + ';cursor:pointer';
+  const lblStyle = 'font-size:.65rem;color:var(--mu);margin-bottom:4px;display:block';
+
+  // 活動係数オプション
+  const afOpts = [
+    {v:'1.2',  t:'1.2 — ベッド上安静（寝たきり）'},
+    {v:'1.3',  t:'1.3 — ベッド外活動あり（座位中心）'},
+    {v:'1.5',  t:'1.5 — 軽度活動（室内歩行程度）'},
+    {v:'1.75', t:'1.75 — 中等度活動（通常歩行）'},
+    {v:'2.0',  t:'2.0 — 高度活動（定期的な運動）'},
+  ].map(o => `<option value="${o.v}">${o.t}</option>`).join('');
+
+  // ストレス係数オプション
+  const sfOpts = [
+    {v:'1.0',  t:'1.0 — 通常（ストレスなし）'},
+    {v:'1.1',  t:'1.1 — 軽度侵襲（軽い外傷・感染）'},
+    {v:'1.2',  t:'1.2 — 中等度侵襲（術後・肺炎）'},
+    {v:'1.3',  t:'1.3 — 高度侵襲（多発外傷・敗血症）'},
+    {v:'1.5',  t:'1.5 — 超高度侵襲（重症熱傷・多臓器不全）'},
+  ].map(o => `<option value="${o.v}">${o.t}</option>`).join('');
+
+  return `
+  <div style="padding:2px 2px 10px;font-size:.68rem;color:var(--mu);line-height:1.6">
+    Harris-Benedict式でBEEを算出し、活動係数・ストレス係数を乗じてTEEを計算します。<br>
+    <span style="color:var(--tx)">TEE = BEE × 活動係数(AF) × ストレス係数(SF)</span>
+  </div>
+
+  <div class="sb"><div class="sh"><span class="sk" style="font-size:.8rem;min-width:40px">入力</span><span class="sn">患者情報</span></div>
+  <div style="padding:10px 12px;display:flex;flex-direction:column;gap:10px">
+
+    <div>
+      <span style="${lblStyle}">性別</span>
+      <div style="display:flex;gap:0;border-radius:7px;overflow:hidden;border:1px solid var(--bd)">
+        <label style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px;background:var(--s3);cursor:pointer;font-size:.82rem;-webkit-tap-highlight-color:transparent">
+          <input type="radio" name="tee-sex" value="male" onchange="calcTEE()" style="accent-color:var(--c-circ)"> 男性
+        </label>
+        <label style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px;background:var(--s3);border-left:1px solid var(--bd);cursor:pointer;font-size:.82rem;-webkit-tap-highlight-color:transparent">
+          <input type="radio" name="tee-sex" value="female" onchange="calcTEE()" style="accent-color:var(--c-circ)"> 女性
+        </label>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+      <div><span style="${lblStyle}">体重 (kg)</span>
+        <input id="tee-weight" type="number" min="10" max="200" step="0.1" placeholder="55" oninput="calcTEE()" style="${inStyle}"></div>
+      <div><span style="${lblStyle}">身長 (cm)</span>
+        <input id="tee-height" type="number" min="100" max="220" step="0.1" placeholder="160" oninput="calcTEE()" style="${inStyle}"></div>
+      <div><span style="${lblStyle}">年齢 (歳)</span>
+        <input id="tee-age" type="number" min="1" max="120" step="1" placeholder="75" oninput="calcTEE()" style="${inStyle}"></div>
+    </div>
+
+    <div><span style="${lblStyle}">活動係数 (AF)</span>
+      <select id="tee-af" onchange="calcTEE()" style="${selStyle}">${afOpts}</select></div>
+
+    <div><span style="${lblStyle}">ストレス係数 (SF)</span>
+      <select id="tee-sf" onchange="calcTEE()" style="${selStyle}">${sfOpts}</select></div>
+
+  </div></div>
+
+  <div class="sb"><div class="sh"><span class="sk" style="font-size:.8rem;min-width:40px">結果</span><span class="sn">計算結果</span></div>
+  <div style="padding:12px" id="tee-result">
+    <span style="font-size:.7rem;color:var(--mu)">性別・体重・身長・年齢をすべて入力してください</span>
+  </div></div>`;
+}
+
+// ══════════════════════════════════════════════
+// 不感蒸泄計算
+// ══════════════════════════════════════════════
+function calcInsensible() {
+  const wEl=$('ins-weight'), tEl=$('ins-temp');
+  if (!wEl||!tEl) return;
+  const w=parseFloat(wEl.value), t=parseFloat(tEl.value);
+  const resEl=$('ins-result');
+  if (!resEl) return;
+  if (isNaN(w)||isNaN(t)||w<=0) { resEl.innerHTML='<span style="color:var(--mu)">体重と体温を入力してください</span>'; hideBar(); return; }
+  const base = w * 15;
+  const fever = Math.max(0, (t - 36.8) * 200);
+  const total = Math.round(base + fever);
+  const skin = Math.round(total * 0.65);
+  const breath = Math.round(total * 0.35);
+  resEl.innerHTML = `
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+      <div><div style="font-size:.58rem;color:var(--mu)">合計不感蒸泄量</div>
+        <div style="font-family:'DM Mono',monospace;font-size:1.8rem;font-weight:500;color:var(--c-circ)">${total}<span style="font-size:.8rem;color:var(--mu)"> mL/日</span></div></div>
+      <div style="font-size:.72rem;color:var(--mu);line-height:1.8">
+        基礎量：${Math.round(base)} mL<br>
+        発熱補正：${Math.round(fever)} mL<br>
+        皮膚：約${skin} mL ／ 呼気：約${breath} mL
+      </div>
+    </div>
+    ${fever>0?`<div style="margin-top:8px;font-size:.68rem;color:var(--wn)">⚠ 発熱(${t}℃)により基礎量より ${Math.round(fever)} mL 多く喪失しています</div>`:''}
+    <div style="margin-top:6px;font-size:.64rem;color:var(--mu)">式：体重(kg)×15 + (体温−36.8)×200　（日本静脈経腸栄養学会推奨）</div>`;
+  const txt = `不感蒸泄 ${total}mL/日（体重${w}kg, 体温${t}℃ / 基礎${Math.round(base)}mL + 発熱補正${Math.round(fever)}mL）`;
+  showBar('不感蒸泄', total+'mL', txt, '', 'var(--c-circ)',
+    '不感蒸泄計算', () => txt,
+    () => { const w=$('ins-weight'),t=$('ins-temp'),r=$('ins-result'); if(w)w.value=''; if(t)t.value='36.8'; if(r)r.innerHTML=''; hideBar(); }
+  );
+}
+function buildInsensible() {
+  return `<div style="padding:2px 2px 10px;font-size:.68rem;color:var(--mu);line-height:1.6">
+    発汗以外の皮膚・呼気からの水分喪失量を計算します。水分出納管理・輸液計画の補助に使用してください。
+  </div>
+  <div class="sb"><div class="sh"><span class="sk" style="font-size:.8rem;min-width:40px">入力</span><span class="sn">患者情報</span></div>
+  <div style="padding:10px 12px;display:flex;flex-direction:column;gap:10px">
+    <div>
+      <div style="font-size:.68rem;color:var(--mu);margin-bottom:4px">体重 (kg)</div>
+      <input id="ins-weight" type="number" min="10" max="200" step="0.1" placeholder="例: 55" oninput="calcInsensible()"
+        style="width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:7px;padding:8px 10px;color:var(--tx);font-size:.9rem;font-family:'DM Mono',monospace;outline:none">
+    </div>
+    <div>
+      <div style="font-size:.68rem;color:var(--mu);margin-bottom:4px">体温 (℃)</div>
+      <input id="ins-temp" type="number" min="35" max="43" step="0.1" value="36.8" oninput="calcInsensible()"
+        style="width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:7px;padding:8px 10px;color:var(--tx);font-size:.9rem;font-family:'DM Mono',monospace;outline:none">
+    </div>
+  </div></div>
+  <div class="sb"><div class="sh"><span class="sk" style="font-size:.8rem;min-width:40px">結果</span><span class="sn">計算結果</span></div>
+  <div style="padding:12px" id="ins-result"><span style="font-size:.7rem;color:var(--mu)">体重と体温を入力してください</span></div></div>`;
+}
+
+// ══════════════════════════════════════════════
+// JCS（Japan Coma Scale）
+// ══════════════════════════════════════════════
+let jcsSt = null;
+function jcsSelect(el) {
+  const v = el.dataset.v;
+  jcsSt = jcsSt === v ? null : v;
+  rebuildJCS();
+}
+function rebuildJCS() {
+  const p = $('pane-jcs'); if (p) p.innerHTML = buildJCS();
+  if (!jcsSt) { hideBar(); return; }
+  const txt = `JCS ${jcsSt}`;
+  const sub = jcsSt==='0'?'意識清明':jcsSt.startsWith('1')||jcsSt==='10'?'刺激なしで覚醒':jcsSt.startsWith('2')||Number(jcsSt)<=29?'刺激で覚醒':'刺激しても覚醒しない';
+  showBar('JCS', jcsSt, txt, sub, 'var(--c-cons)',
+    'JCS（ジャパン・コーマ・スケール）', () => txt,
+    () => { jcsSt=null; rebuildJCS(); hideBar(); }
+  );
+}
+function buildJCS() {
+  const cats = [
+    { head:'Ⅰ群：刺激しないでも覚醒している状態', col:'var(--ok)', opts:[
+      {v:'0', lb:'JCS 0', lc:'ok', cls:'c0', tx:'意識清明'},
+      {v:'1', lb:'JCS 1', lc:'ok', cls:'c0', tx:'だいたい意識清明だが、今ひとつはっきりしない'},
+      {v:'2', lb:'JCS 2', lc:'',  cls:'c1', tx:'見当識障害がある'},
+      {v:'3', lb:'JCS 3', lc:'',  cls:'c1', tx:'自分の名前・生年月日が言えない'},
+    ]},
+    { head:'Ⅱ群：刺激すると覚醒する状態（刺激をやめると眠り込む）', col:'var(--wn)', opts:[
+      {v:'10', lb:'JCS 10',lc:'',  cls:'cw', tx:'普通の呼びかけで容易に開眼する'},
+      {v:'20', lb:'JCS 20',lc:'hv',cls:'cw', tx:'大きな声または体を揺さぶることにより開眼する'},
+      {v:'30', lb:'JCS 30',lc:'hv',cls:'cd', tx:'痛み刺激を加えつつ呼びかけを繰り返すと辛うじて開眼する'},
+    ]},
+    { head:'Ⅲ群：刺激しても覚醒しない状態', col:'var(--dg)', opts:[
+      {v:'100',lb:'JCS 100',lc:'hv',cls:'cd', tx:'痛みに対し払いのける動作をする'},
+      {v:'200',lb:'JCS 200',lc:'hv',cls:'cd', tx:'痛みに対し手足を動かしたり顔をしかめたりする'},
+      {v:'300',lb:'JCS 300',lc:'hv',cls:'cd', tx:'痛みに反応しない'},
+    ]},
+  ];
+  const note = `<div style="font-size:.62rem;color:var(--mu);padding:4px 2px 10px;line-height:1.6">R:不穏、I:失禁、A:自動症の付記も可能（例：JCS 10-R）</div>`;
+  return note + cats.map(cat => `
+    <div class="sb"><div class="sh" style="background:color-mix(in srgb,${cat.col} 8%,var(--s3))">
+      <span class="sn" style="font-size:.75rem;color:${cat.col}">${cat.head}</span></div>
+    <div class="opts">${cat.opts.map(o => {
+      const isSel = jcsSt===o.v;
+      return `<div class="opt${isSel?' '+o.cls:''}" data-v="${o.v}" onclick="jcsSelect(this)">
+        <span class="rdot"></span>
+        <span class="olbl ${o.lc}">${o.lb}</span>
+        <span class="otx">${o.tx}</span></div>`;
+    }).join('')}</div></div>`).join('');
+}
+
+// ══════════════════════════════════════════════
+// GCS（Glasgow Coma Scale）
+// ══════════════════════════════════════════════
+const GCS_ITEMS = [
+  { k:'E', n:'開眼', e:'Eye Opening', opts:[
+    {v:4,lb:'E4',lc:'ok', cls:'c0', tx:'自発的に開眼する'},
+    {v:3,lb:'E3',lc:'',   cls:'c1', tx:'呼びかけにより開眼する'},
+    {v:2,lb:'E2',lc:'hv', cls:'cw', tx:'痛み刺激により開眼する'},
+    {v:1,lb:'E1',lc:'hv', cls:'cd', tx:'開眼しない'},
+  ]},
+  { k:'V', n:'言語反応', e:'Verbal Response', opts:[
+    {v:5,lb:'V5',lc:'ok', cls:'c0', tx:'見当識が保たれている（時・場所・人物）'},
+    {v:4,lb:'V4',lc:'',   cls:'c1', tx:'混乱した会話（見当識障害あり）'},
+    {v:3,lb:'V3',lc:'',   cls:'cw', tx:'不適切な言葉（単語のみ）'},
+    {v:2,lb:'V2',lc:'hv', cls:'cw', tx:'理解できない声（呻き声など）'},
+    {v:1,lb:'V1',lc:'hv', cls:'cd', tx:'発語なし'},
+  ]},
+  { k:'M', n:'運動反応', e:'Motor Response', opts:[
+    {v:6,lb:'M6',lc:'ok', cls:'c0', tx:'命令に従う'},
+    {v:5,lb:'M5',lc:'',   cls:'c1', tx:'痛み刺激部位に手を持ってくる（疼痛部位認識）'},
+    {v:4,lb:'M4',lc:'',   cls:'cw', tx:'痛み刺激で逃避する'},
+    {v:3,lb:'M3',lc:'hv', cls:'cw', tx:'異常な屈曲（除皮質硬直）'},
+    {v:2,lb:'M2',lc:'hv', cls:'cd', tx:'伸展反応（除脳硬直）'},
+    {v:1,lb:'M1',lc:'hv', cls:'cd', tx:'反応なし'},
+  ]},
+];
+const gcsSt = {E:null,V:null,M:null};
+function gcsSelect(el) {
+  const k=el.dataset.k, v=Number(el.dataset.v);
+  gcsSt[k] = gcsSt[k]===v ? null : v;
+  rebuildGCS();
+}
+function rebuildGCS() {
+  const p=$('pane-gcs'); if(p) p.innerHTML=buildGCS();
+  const total=(gcsSt.E||0)+(gcsSt.V||0)+(gcsSt.M||0);
+  if (!gcsSt.E&&!gcsSt.V&&!gcsSt.M) { hideBar(); return; }
+  const e=gcsSt.E?'E'+gcsSt.E:'E?', v=gcsSt.V?'V'+gcsSt.V:'V?', m=gcsSt.M?'M'+gcsSt.M:'M?';
+  const interp = total<=8?'重篤な意識障害（挿管基準）':total<=12?'中等度意識障害':total<=14?'軽度意識障害':'ほぼ正常';
+  const txt = `GCS ${total}点 (${e}${v}${m}) [${interp}]`;
+  showBar('GCS合計', total+'点', txt, interp, 'var(--c-cons)',
+    'GCS（グラスゴー・コーマ・スケール）', () => txt,
+    () => { gcsSt.E=null;gcsSt.V=null;gcsSt.M=null; rebuildGCS(); hideBar(); }
+  );
+}
+function buildGCS() {
+  const total=(gcsSt.E||0)+(gcsSt.V||0)+(gcsSt.M||0);
+  const allSel=gcsSt.E&&gcsSt.V&&gcsSt.M;
+  const col=allSel?(total<=8?'var(--dg)':total<=12?'var(--wn)':'var(--ok)'):'var(--mu)';
+  const interp=allSel?(total<=8?'重篤（挿管基準 ≤8）':total<=12?'中等度':total<=14?'軽度':'ほぼ正常'):'選択中…';
+  const tbar=`<div class="tbar">
+    <div><div style="font-size:.6rem;color:var(--mu)">合計（3〜15点）</div>
+      <div style="font-family:'DM Mono',monospace;font-size:1.8rem;font-weight:500;color:${col}">${total}</div></div>
+    <div><div style="font-size:.8rem;font-weight:700;color:${col}">${interp}</div>
+      <div style="font-size:.62rem;color:var(--mu);margin-top:2px">E${gcsSt.E||'?'} V${gcsSt.V||'?'} M${gcsSt.M||'?'} | 8点以下: 気道確保を考慮</div></div></div>`;
+  return tbar + GCS_ITEMS.map(it => {
+    const cv=gcsSt[it.k];
+    return `<div class="sb${cv?' sel':''}">
+      <div class="sh"><span class="sk">${it.k}</span>
+        <span class="sn">${it.n}<span class="se">${it.e}</span></span>
+        <span class="sv">${cv?it.k+cv:'—'}</span></div>
+      <div class="opts">${it.opts.map(o=>{
+        const isSel=cv===o.v;
+        return `<div class="opt${isSel?' '+o.cls:''}" data-k="${it.k}" data-v="${o.v}" onclick="gcsSelect(this)">
+          <span class="rdot"></span><span class="olbl ${o.lc}">${o.lb}</span>
+          <span class="otx">${o.tx}</span></div>`;
+      }).join('')}</div></div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════
+// RASS
+// ══════════════════════════════════════════════
+let rassSt = null;
+function rassSelect(el) {
+  const v = Number(el.dataset.v);
+  rassSt = rassSt===v ? null : v;
+  rebuildRASS();
+}
+function rebuildRASS() {
+  const p=$('pane-rass'); if(p) p.innerHTML=buildRASS();
+  if (rassSt===null) { hideBar(); return; }
+  const opts = [
+    {v:4,lb:'+4 興奮状態'},{v:3,lb:'+3 非常に興奮'},{v:2,lb:'+2 興奮'},{v:1,lb:'+1 落ち着きなし'},
+    {v:0,lb:'0 意識清明'},{v:-1,lb:'-1 傾眠'},{v:-2,lb:'-2 浅い鎮静'},{v:-3,lb:'-3 中等度鎮静'},
+    {v:-4,lb:'-4 深い鎮静'},{v:-5,lb:'-5 覚醒不能'},
+  ];
+  const o = opts.find(x=>x.v===rassSt);
+  const txt = `RASS ${rassSt>0?'+':''}${rassSt} [${o.lb}]`;
+  showBar('RASS', (rassSt>0?'+':'')+rassSt, txt, '', 'var(--c-cons)',
+    'RASS（Richmond Agitation-Sedation Scale）', () => txt,
+    () => { rassSt=null; rebuildRASS(); hideBar(); }
+  );
+}
+function buildRASS() {
+  const items = [
+    {v:4, lb:'+4',lc:'hv',cls:'cd',tx:'興奮状態',sub:'攻撃的・暴力的、スタッフへの直接的な危険がある'},
+    {v:3, lb:'+3',lc:'hv',cls:'cd',tx:'非常に興奮している',sub:'チューブやカテーテルを引き抜く、攻撃的な行動'},
+    {v:2, lb:'+2',lc:'hv',cls:'cw',tx:'興奮している',sub:'頻繁で目的のない動き、人工呼吸器に抵抗する'},
+    {v:1, lb:'+1',lc:'',  cls:'c1',tx:'落ち着きがない',sub:'不安そう・過敏、動きは攻撃的でも激しくもない'},
+    {v:0, lb:' 0',lc:'ok',cls:'c0',tx:'意識清明・穏やか',sub:'目が覚めており、穏やかで落ち着いている'},
+    {v:-1,lb:'-1',lc:'',  cls:'c1',tx:'傾眠',sub:'完全に目覚めていないが、呼びかけに対し10秒以上の開眼・アイコンタクトあり'},
+    {v:-2,lb:'-2',lc:'',  cls:'cw',tx:'浅い鎮静',sub:'呼びかけに対して短時間（10秒未満）の開眼・アイコンタクトあり'},
+    {v:-3,lb:'-3',lc:'hv',cls:'cw',tx:'中等度鎮静',sub:'呼びかけに反応して動くか開眼するが、アイコンタクトなし'},
+    {v:-4,lb:'-4',lc:'hv',cls:'cd',tx:'深い鎮静',sub:'呼びかけには無反応。痛み刺激で動くか開眼する'},
+    {v:-5,lb:'-5',lc:'hv',cls:'cd',tx:'覚醒不能',sub:'呼びかけにも痛み刺激にも無反応'},
+  ];
+  const note=`<div style="font-size:.65rem;color:var(--mu);padding:4px 2px 10px;line-height:1.6">
+    評価手順：① 観察 → ② 呼びかけ（名前+開眼指示） → ③ 無反応なら身体刺激（肩を揺する）</div>`;
+  return note + `<div class="sb"><div class="opts">${items.map(o=>{
+    const isSel=rassSt===o.v;
+    return `<div class="opt${isSel?' '+o.cls:''}" data-v="${o.v}" onclick="rassSelect(this)">
+      <span class="rdot"></span>
+      <span class="olbl ${o.lc}" style="min-width:28px">${o.lb}</span>
+      <span class="otx">${o.tx}<div class="osub">${o.sub}</div></span></div>`;
+  }).join('')}</div></div>`;
+}
+
+// ══════════════════════════════════════════════
+// ブリストル便形状スケール
+// ══════════════════════════════════════════════
+let bristolSt = null;
+function bristolSelect(el) {
+  const v=Number(el.dataset.v);
+  bristolSt = bristolSt===v ? null : v;
+  rebuildBristol();
+}
+function rebuildBristol() {
+  const p=$('pane-bristol'); if(p) p.innerHTML=buildBristol();
+  if (bristolSt===null) { hideBar(); return; }
+  const items=[
+    {v:1,lbl:'Type 1',sub:'硬い便（便秘）'},{v:2,lbl:'Type 2',sub:'塊状便（便秘傾向）'},
+    {v:3,lbl:'Type 3',sub:'ひび割れ便（正常）'},{v:4,lbl:'Type 4',sub:'なめらかな便（理想）'},
+    {v:5,lbl:'Type 5',sub:'軟らかい便（正常〜下痢傾向）'},{v:6,lbl:'Type 6',sub:'泥状便（下痢）'},
+    {v:7,lbl:'Type 7',sub:'水様便（下痢）'},
+  ];
+  const o=items.find(x=>x.v===bristolSt);
+  const txt=`ブリストルスケール Type${bristolSt} [${o.sub}]`;
+  showBar('タイプ', 'Type '+bristolSt, txt, o.sub, 'var(--c-excr)',
+    'ブリストル便形状スケール', () => txt,
+    () => { bristolSt=null; rebuildBristol(); hideBar(); }
+  );
+}
+function buildBristol() {
+  const items=[
+    {v:1,lbl:'Type 1',emoji:'⬛',lc:'hv',cls:'cd',tx:'コロコロした硬い塊（ウサギの糞）',sub:'重度の便秘を示す。腸通過時間が非常に長い'},
+    {v:2,lbl:'Type 2',emoji:'🟫',lc:'hv',cls:'cd',tx:'ソーセージ状だが塊がある硬い便',sub:'便秘傾向。腸通過時間が長い'},
+    {v:3,lbl:'Type 3',emoji:'🟤',lc:'',  cls:'c1',tx:'表面にひび割れのあるソーセージ状',sub:'正常範囲内。やや硬め'},
+    {v:4,lbl:'Type 4',emoji:'🟢',lc:'ok',cls:'c0',tx:'なめらかで柔らかいソーセージ状（理想的）',sub:'正常。健康的な便'},
+    {v:5,lbl:'Type 5',emoji:'🟡',lc:'',  cls:'c1',tx:'柔らかい塊が分離している（辺縁が鮮明）',sub:'正常〜下痢傾向。食物繊維不足の可能性'},
+    {v:6,lbl:'Type 6',emoji:'🟠',lc:'hv',cls:'cw',tx:'境界不鮮明な泥状便',sub:'下痢。軽度の炎症・感染・薬剤の影響などを考慮'},
+    {v:7,lbl:'Type 7',emoji:'🔴',lc:'hv',cls:'cd',tx:'固形物のない水様便',sub:'重度の下痢。脱水・感染症・炎症性腸疾患などを考慮'},
+  ];
+  const note=`<div style="font-size:.68rem;color:var(--mu);padding:4px 2px 10px;line-height:1.6">
+    腸通過時間の指標。Type 3〜5が正常範囲。Type 1〜2は便秘、Type 6〜7は下痢を示す。</div>`;
+  return note+`<div class="sb"><div class="opts">${items.map(o=>{
+    const isSel=bristolSt===o.v;
+    return `<div class="opt${isSel?' '+o.cls:''}" data-v="${o.v}" onclick="bristolSelect(this)">
+      <span class="rdot"></span>
+      <span style="font-size:1rem;flex-shrink:0;margin-top:1px">${o.emoji}</span>
+      <span class="olbl ${o.lc}" style="min-width:50px">${o.lbl}</span>
+      <span class="otx">${o.tx}<div class="osub">${o.sub}</div></span></div>`;
+  }).join('')}</div></div>`;
+}
+
+// ══════════════════════════════════════════════
+// 血尿スケール
+// ══════════════════════════════════════════════
+let hematuriaSt = null;
+function hematuriaSelect(el) {
+  const v=el.dataset.v;
+  hematuriaSt = hematuriaSt===v ? null : v;
+  rebuildHematuria();
+}
+function rebuildHematuria() {
+  const p=$('pane-hematuria'); if(p) p.innerHTML=buildHematuria();
+  if (!hematuriaSt) { hideBar(); return; }
+  const txt=`血尿スケール: ${hematuriaSt}`;
+  showBar('血尿', hematuriaSt, txt, '', 'var(--c-excr)',
+    '血尿スケール', () => txt,
+    () => { hematuriaSt=null; rebuildHematuria(); hideBar(); }
+  );
+}
+function buildHematuria() {
+  const items=[
+    {v:'尿色正常',   lc:'ok',cls:'c0',tx:'尿色正常（淡黄色〜黄色）',sub:'血尿なし'},
+    {v:'淡赤色尿',   lc:'',  cls:'c1',tx:'淡赤色・ピンク色尿',sub:'軽度の肉眼的血尿（尿1mLに血液0.1mL以上で赤色に）'},
+    {v:'赤色尿',     lc:'hv',cls:'cw',tx:'赤色尿（鮮血色）',sub:''},
+    {v:'暗赤色尿',   lc:'hv',cls:'cd',tx:'暗赤色・コーラ色尿',sub:'腎由来や古い出血を示唆。横紋筋融解症も考慮'},
+    {v:'凝血塊あり', lc:'hv',cls:'cd',tx:'凝血塊混入',sub:'多量出血。カテーテル閉塞・排尿困難のリスクあり'},
+  ];
+  return `<div class="sb"><div class="opts">${items.map(o=>{
+    const isSel=hematuriaSt===o.v;
+    const vs=o.v.replace(/"/g,'&quot;');
+    return `<div class="opt${isSel?' '+o.cls:''}" data-v="${vs}" onclick="hematuriaSelect(this)">
+      <span class="rdot"></span>
+      <span class="olbl ${o.lc}">${o.v}</span>
+      <span class="otx">${o.tx}<div class="osub">${o.sub}</div></span></div>`;
+  }).join('')}</div></div>`;
+}
+
+// ══════════════════════════════════════════════
+// PPI（Palliative Prognostic Index）
+// ══════════════════════════════════════════════
+const PPI_ITEMS = [
+  { k:'PPS', n:'Palliative Performance Scale', e:'全身状態',
+    h:'左側（起居）から順に評価し、最初に当てはまるレベルを選択する',
+    opts:[
+      {v:4.0,lb:'10-20',lc:'hv',cls:'cd',tx:'PPS 10〜20%：ほぼ全介助、最小限の活動',sub:'4.0点'},
+      {v:2.5,lb:'30-50',lc:'hv',cls:'cw',tx:'PPS 30〜50%：しばしばベッド臥床が必要、時に混乱',sub:'2.5点'},
+      {v:0,  lb:'60以上',lc:'ok',cls:'c0',tx:'PPS 60%以上：通常活動に制限あるが，独歩可能',sub:'0点'},
+    ]
+  },
+  { k:'摂食', n:'経口摂取量', e:'Oral Intake',
+    h:'通常と比較しての食事摂取量',
+    opts:[
+      {v:2.5,lb:'著明減少',lc:'hv',cls:'cd',tx:'著明に減少（数口以下）',sub:'2.5点'},
+      {v:1,  lb:'中等度減少',lc:'',  cls:'cw',tx:'中等度減少（通常より減っているが数口より多い）',sub:'1点'},
+      {v:0,  lb:'正常',    lc:'ok',cls:'c0',tx:'正常',sub:'0点'},
+    ]
+  },
+  { k:'浮腫', n:'浮腫', e:'Edema',
+    opts:[
+      {v:1,lb:'あり',lc:'hv',cls:'cd',tx:'浮腫あり',sub:'1点'},
+      {v:0,lb:'なし',lc:'ok',cls:'c0',tx:'浮腫なし',sub:'0点'},
+    ]
+  },
+  { k:'呼吸', n:'安静時呼吸困難', e:'Dyspnea at Rest',
+    opts:[
+      {v:3.5,lb:'あり',lc:'hv',cls:'cd',tx:'安静時呼吸困難あり',sub:'3.5点'},
+      {v:0,  lb:'なし',lc:'ok',cls:'c0',tx:'なし',sub:'0点'},
+    ]
+  },
+  { k:'せん妄', n:'せん妄', e:'Delirium',
+    h:'不穏・つじつまの合わない話・見当識障害など',
+    opts:[
+      {v:4,lb:'あり',lc:'hv',cls:'cd',tx:'せん妄あり（不穏・幻覚・見当識障害）',sub:'4点'},
+      {v:0,lb:'なし',lc:'ok',cls:'c0',tx:'なし',sub:'0点'},
+    ]
+  },
+];
+const ppiSt={}; PPI_ITEMS.forEach(it=>ppiSt[it.k]=null);
+function ppiSel(el) {
+  const k=el.dataset.k, v=Number(el.dataset.v);
+  ppiSt[k]=ppiSt[k]===v?null:v;
+  rebuildPPI();
+}
+function rebuildPPI() {
+  const p=$('pane-ppi'); if(p) p.innerHTML=buildPPI();
+  const total=PPI_ITEMS.reduce((s,it)=>s+(ppiSt[it.k]!==null?ppiSt[it.k]:0),0);
+  const anySet=PPI_ITEMS.some(it=>ppiSt[it.k]!==null);
+  if (!anySet) { hideBar(); return; }
+  const interp=total>=6?'予後3週間以内の可能性が高い':total>=4?'予後6週間以内の可能性':'予後6週間以上の可能性';
+  const txt=`PPI ${total.toFixed(1)}点 [${interp}]`;
+  showBar('PPI', total.toFixed(1)+'点', txt, interp, 'var(--c-eol)',
+    'PPI（Palliative Prognostic Index）', () => txt,
+    () => { PPI_ITEMS.forEach(it=>ppiSt[it.k]=null); rebuildPPI(); hideBar(); }
+  );
+}
+function buildPPI() {
+  const total=PPI_ITEMS.reduce((s,it)=>s+(ppiSt[it.k]!==null?ppiSt[it.k]:0),0);
+  const anySet=PPI_ITEMS.some(it=>ppiSt[it.k]!==null);
+  const col=total>=6?'var(--dg)':total>=4?'var(--wn)':'var(--ok)';
+  const interp=total>=6?'予後3週間以内':total>=4?'予後6週間以内':'予後6週間以上';
+  const tbar=`<div class="tbar" style="${anySet?'':'display:none'}">
+    <div><div style="font-size:.6rem;color:var(--mu)">合計（0〜15点）</div>
+      <div style="font-family:'DM Mono',monospace;font-size:1.8rem;font-weight:500;color:${anySet?col:'var(--mu)'}">
+        ${total.toFixed(1)}</div></div>
+    <div><div style="font-size:.8rem;font-weight:700;color:${anySet?col:'var(--mu)'}">${anySet?interp:'選択中…'}</div>
+      <div style="font-size:.62rem;color:var(--mu);margin-top:2px">≥6点: 3週間以内 | ≥4点: 6週間以内 | ＜4点: 6週間以上</div>
+      <div style="font-size:.6rem;color:var(--mu);margin-top:2px">がん終末期患者を対象として開発。非がん疾患への適用は要注意。</div></div></div>`;
+  return tbar+PPI_ITEMS.map(it=>{
+    const cv=ppiSt[it.k];
+    return `<div class="sb${cv!==null?' sel':''}">
+      <div class="sh"><span class="sk" style="font-size:.78rem;min-width:42px">${it.k}</span>
+        <span class="sn">${it.n}<span class="se">${it.e}</span></span>
+        <span class="sv">${cv!==null?cv+'点':'—'}</span></div>
+      ${it.h?`<div class="hint">${it.h}</div>`:''}
+      <div class="opts">${it.opts.map(o=>{
+        const isSel=cv===o.v;
+        return `<div class="opt${isSel?(o.cls==='c0'?' c0':o.cls==='cd'?' cd':' cw'):''}" data-k="${it.k}" data-v="${o.v}" onclick="ppiSel(this)">
+          <span class="rdot"></span>
+          <span class="olbl ${o.lc}">${o.lb}</span>
+          <span class="otx">${o.tx}<div class="osub">${o.sub}</div></span></div>`;
+      }).join('')}</div></div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════
+// CPOT（Critical-Care Pain Observation Tool）
+// ══════════════════════════════════════════════
+const CPOT_ITEMS = [
+  { k:'表情', n:'表情', e:'Facial Expression',
+    opts:[
+      {v:0,lb:'0点',lc:'ok',cls:'c0',tx:'リラックス・自然',sub:'筋緊張なし'},
+      {v:1,lb:'1点',lc:'',  cls:'cw',tx:'緊張した表情',sub:'眉をひそめる、瞼を閉じようとする'},
+      {v:2,lb:'2点',lc:'hv',cls:'cd',tx:'しかめ面・顔をゆがめる',sub:'上記の動作＋目を堅く閉じる、口を開ける、泣きそうな表情'},
+    ]
+  },
+  { k:'体動', n:'体の動き', e:'Body Movements',
+    opts:[
+      {v:0,lb:'0点',lc:'ok',cls:'c0',tx:'動きなし',sub:'通常の体位を保持している（必ずしも動かないという意味ではない）'},
+      {v:1,lb:'1点',lc:'',  cls:'cw',tx:'保護的な動き',sub:'ゆっくりと注意深い動き、疼痛部位に触れる、注意を引こうとする'},
+      {v:2,lb:'2点',lc:'hv',cls:'cd',tx:'落ち着きのない動き',sub:'チューブを引っ張る、起き上がろうとする、四肢を動かす・たたく、指示に従えない'},
+    ]
+  },
+  { k:'筋緊張', n:'筋緊張', e:'Muscle Tension',
+    h:'上肢の他動的屈曲・伸展で評価する',
+    opts:[
+      {v:0,lb:'0点',lc:'ok',cls:'c0',tx:'リラックスしている',sub:'他動運動に抵抗なし'},
+      {v:1,lb:'1点',lc:'',  cls:'cw',tx:'緊張・硬直している',sub:'他動運動に抵抗あり'},
+      {v:2,lb:'2点',lc:'hv',cls:'cd',tx:'非常に緊張・硬直している',sub:'他動運動を強く拒む、他動運動が困難'},
+    ]
+  },
+  { k:'発声/呼吸', n:'発声または人工呼吸器コンプライアンス', e:'Compliance/Vocalization',
+    h:'挿管患者と非挿管患者で評価基準が異なる。実際の状況に合わせて選択する',
+    opts:[
+      {v:0,lb:'0点',lc:'ok',cls:'c0',tx:'【挿管】人工呼吸器に同調 / 【非挿管】普通の会話または無音',sub:'アラームなし、安楽そうな呼吸'},
+      {v:1,lb:'1点',lc:'',  cls:'cw',tx:'【挿管】咳嗽あるが同調 / 【非挿管】ため息・うめき声',sub:'咳嗽あるが人工呼吸器には同調している'},
+      {v:2,lb:'2点',lc:'hv',cls:'cd',tx:'【挿管】ファイティング / 【非挿管】泣く・叫ぶ',sub:'人工呼吸器に抵抗している、呼吸器アラーム頻発'},
+    ]
+  },
+];
+const cpotSt={}; CPOT_ITEMS.forEach(it=>cpotSt[it.k]=null);
+function cpotSel(el) {
+  const k=el.dataset.k, v=Number(el.dataset.v);
+  cpotSt[k]=cpotSt[k]===v?null:v;
+  rebuildCPOT();
+}
+function rebuildCPOT() {
+  const p=$('pane-cpot'); if(p) p.innerHTML=buildCPOT();
+  const total=CPOT_ITEMS.reduce((s,it)=>s+(cpotSt[it.k]!==null?cpotSt[it.k]:0),0);
+  const anySet=CPOT_ITEMS.some(it=>cpotSt[it.k]!==null);
+  if (!anySet) { hideBar(); return; }
+  const interp=total>=4?'高度な痛みの可能性・鎮痛治療の検討が必要':total>=2?'中等度の痛みの可能性':total>=0?'痛みなしまたは軽度の痛み':'痛みなし';
+  const txt=`CPOT ${total}点 [${interp}]`;
+  showBar('CPOT', total+'点', txt, interp, 'var(--c-eol)',
+    'CPOT（Critical-Care Pain Observation Tool）', () => txt,
+    () => { CPOT_ITEMS.forEach(it=>cpotSt[it.k]=null); rebuildCPOT(); hideBar(); }
+  );
+}
+function buildCPOT() {
+  const total=CPOT_ITEMS.reduce((s,it)=>s+(cpotSt[it.k]!==null?cpotSt[it.k]:0),0);
+  const anySet=CPOT_ITEMS.some(it=>cpotSt[it.k]!==null);
+  const col=total>=4?'var(--dg)':total>=2?'var(--wn)':'var(--ok)';
+  const tbar=`<div class="tbar" style="${anySet?'':'display:none'}">
+    <div><div style="font-size:.6rem;color:var(--mu)">合計（0〜8点）</div>
+      <div style="font-family:'DM Mono',monospace;font-size:1.8rem;font-weight:500;color:${anySet?col:'var(--mu)'}">
+        ${total}</div></div>
+    <div><div style="font-size:.8rem;font-weight:700;color:${anySet?col:'var(--mu)'}">${anySet?(total>=4?'高度な痛み':total>=2?'中等度の痛み':'軽度〜痛みなし'):'選択中…'}</div>
+      <div style="font-size:.62rem;color:var(--mu);margin-top:2px">0〜1点:軽度以下 / 2〜3点:中等度 / ≥4点:高度・鎮痛治療を検討 | 自己申告できない患者に使用</div></div></div>`;
+  return tbar+CPOT_ITEMS.map(it=>{
+    const cv=cpotSt[it.k];
+    return `<div class="sb${cv!==null?' sel':''}">
+      <div class="sh"><span class="sk" style="font-size:.75rem;min-width:46px">${it.k}</span>
+        <span class="sn">${it.n}<span class="se">${it.e}</span></span>
+        <span class="sv">${cv!==null?cv+'点':'—'}</span></div>
+      ${it.h?`<div class="hint">${it.h}</div>`:''}
+      <div class="opts">${it.opts.map(o=>{
+        const isSel=cv===o.v;
+        return `<div class="opt${isSel?(o.cls==='c0'?' c0':o.cls==='cd'?' cd':' cw'):''}" data-k="${it.k}" data-v="${o.v}" onclick="cpotSel(this)">
+          <span class="rdot"></span>
+          <span class="olbl ${o.lc}">${o.lb}</span>
+          <span class="otx">${o.tx}<div class="osub">${o.sub}</div></span></div>`;
+      }).join('')}</div></div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════
+// SPAツール（ストーマ・フィジカルアセスメント）
+// 表２準拠 Step1〜4 / 11項目
+// ══════════════════════════════════════════════
+
+const spaSt = {
+  shape:null, perioskin:null, firmness:null,
+  flatness:null, wrinkle_nc:null, wrinkle_c:null,
+  stoma_type:null, discharge:null, wear_stable:null
+};
+const spaNum = { height:'', width:'' };
+
+function spaSel(el) {
+  const id = el.dataset.id, v = el.dataset.spaOpt;
+  spaSt[id] = (spaSt[id]===v) ? null : v;
+  spaRefresh();
+}
+function spaNumInput(id) {
+  const el = document.getElementById('spa-num-'+id);
+  if (el) spaNum[id] = el.value;
+  spaUpdateBar();
+}
+
+function rebuildSPA() {
+  const p = document.getElementById('pane-spa'); if (!p) return;
+  p.innerHTML = buildSPA();
+  Object.keys(spaNum).forEach(function(id) {
+    const el = document.getElementById('spa-num-'+id);
+    if (el) el.value = spaNum[id];
+  });
+  spaRefresh();
+}
+
+function spaRefresh() {
+  const p = document.getElementById('pane-spa'); if (!p) return;
+  const ids = Object.keys(spaSt);
+  ids.forEach(function(secId) {
+    const sbEl = p.querySelector('[data-spa-sb="'+secId+'"]'); if (!sbEl) return;
+    const cv = spaSt[secId];
+    sbEl.classList.toggle('sel', cv !== null);
+    const svEl = sbEl.querySelector('.spa-sv');
+    if (svEl) {
+      if (!cv) { svEl.textContent = '—'; svEl.style.color = 'var(--mu)'; return; }
+      const short = cv.replace(/（[^）]*）/g,'').replace('ストーマ','').substring(0,6);
+      svEl.textContent = short;
+      const optEl = sbEl.querySelector('[data-spa-opt="'+cv.replace(/"/g,'\"')+'"]');
+      const cls = optEl ? optEl.dataset.spaCls : '';
+      svEl.style.color = cls==='cd'?'var(--dg)':cls==='cw'?'var(--wn)':'var(--ok)';
+    }
+    sbEl.querySelectorAll('[data-spa-opt]').forEach(function(optEl) {
+      const ov = optEl.dataset.spaOpt, cls = optEl.dataset.spaCls||'';
+      optEl.className = 'opt'+(cv===ov?' '+cls:'');
+    });
+  });
+  // 判定バー
+  var cdCount=0, cwCount=0;
+  ids.forEach(function(id) {
+    const v=spaSt[id]; if (!v) return;
+    const p2 = document.getElementById('pane-spa'); if (!p2) return;
+    const el = p2.querySelector('[data-spa-opt="'+v.replace(/"/g,'\"')+'"]'); if (!el) return;
+    if (el.dataset.spaCls==='cd') cdCount++;
+    if (el.dataset.spaCls==='cw') cwCount++;
+  });
+  const anySet = ids.some(function(k){return spaSt[k]!==null;})
+               || Object.keys(spaNum).some(function(k){return spaNum[k]!=='';});
+  const judge = cdCount>=2?'装具変更・専門的ケアが必要'
+              : (cdCount>=1||cwCount>=3)?'装具・ケア方法の再検討が必要'
+              : '現在の装具で対応可能';
+  const jcol = cdCount>=2?'var(--dg)':(cdCount>=1||cwCount>=3)?'var(--wn)':'var(--ok)';
+  const tbarEl = p.querySelector('#spa-tbar');
+  if (tbarEl) { tbarEl.style.display = anySet?'':'none'; }
+  const lblEl = p.querySelector('#spa-tbar-lbl');
+  if (lblEl) { lblEl.textContent = judge; lblEl.style.color = jcol; }
+  spaUpdateBar();
+}
+
+function spaUpdateBar() {
+  const ids = Object.keys(spaSt);
+  const anySet = ids.some(function(k){return spaSt[k]!==null;})
+               || Object.keys(spaNum).some(function(k){return spaNum[k]!=='';});
+  if (!anySet) { hideBar(); return; }
+  const p = document.getElementById('pane-spa');
+  var cdCount=0, cwCount=0;
+  ids.forEach(function(id) {
+    const v=spaSt[id]; if (!v||!p) return;
+    const el = p.querySelector('[data-spa-opt="'+v.replace(/"/g,'\"')+'"]'); if (!el) return;
+    if (el.dataset.spaCls==='cd') cdCount++;
+    if (el.dataset.spaCls==='cw') cwCount++;
+  });
+  const judge = cdCount>=2?'装具変更・専門的ケアが必要'
+              : (cdCount>=1||cwCount>=3)?'装具・ケア方法の再検討が必要'
+              : '現在の装具で対応可能';
+  var lines = [];
+  var s1=[]; if(spaSt.shape) s1.push('①形状:'+spaSt.shape);
+  if(spaNum.height) s1.push('②高さ:'+spaNum.height+'mm'+(parseFloat(spaNum.height)>=10?'(突出)':'(平坦)'));
+  if(spaSt.perioskin) s1.push('③周囲皮膚:'+spaSt.perioskin);
+  if(s1.length) lines.push('[Step 1] '+s1.join(' / '));
+  if(spaSt.firmness) lines.push('[Step 2] ④腹壁硬度:'+spaSt.firmness);
+  var s3=[];
+  if(spaNum.width) s3.push('⑤横径:'+spaNum.width+'mm');
+  if(spaSt.flatness) s3.push('⑥平坦度:'+spaSt.flatness);
+  if(spaSt.wrinkle_nc) s3.push('⑦非連結しわ:'+spaSt.wrinkle_nc);
+  if(spaSt.wrinkle_c) s3.push('⑧連結しわ:'+spaSt.wrinkle_c);
+  if(s3.length) lines.push('[Step 3] '+s3.join(' / '));
+  var s4=[];
+  if(spaSt.stoma_type) s4.push('⑨種類:'+spaSt.stoma_type);
+  if(spaSt.discharge) s4.push('⑩排泄物:'+spaSt.discharge);
+  if(spaSt.wear_stable) s4.push('⑪装着:'+spaSt.wear_stable);
+  if(s4.length) lines.push('[Step 4] '+s4.join(' / '));
+  const txt = 'SPAツール → '+judge+'\n'+lines.join('\n');
+  showBar('SPA','評価済',txt,judge,'var(--c-stoma)',
+    'SPAツール（ストーマ・フィジカルアセスメント）',
+    function(){return txt;},
+    function(){
+      Object.keys(spaSt).forEach(function(k){spaSt[k]=null;});
+      Object.keys(spaNum).forEach(function(k){spaNum[k]='';});
+      rebuildSPA(); hideBar();
+    }
+  );
+}
+
+function buildSPA() {
+  var INP = 'width:100px;background:var(--s2);border:1px solid var(--bd);border-radius:7px;'
+          + 'padding:7px 10px;color:var(--tx);font-size:.88rem;outline:none;-webkit-appearance:none';
+
+  function makeOpts(id, opts) {
+    return opts.map(function(o){
+      var vs = o.v.replace(/"/g,'&quot;');
+      var short = o.v.replace(/（[^）]*）/g,'').replace('ストーマ','').substring(0,6);
+      return '<div class="opt" data-spa-opt="'+vs+'" data-spa-cls="'+o.cls+'" data-id="'+id
+           + '" onclick="spaSel(this)">'
+           + '<span class="rdot"></span>'
+           + '<span class="olbl '+o.lc+'" style="min-width:52px;font-size:.7rem">'+short+'</span>'
+           + '<span class="otx">'+o.tx+'</span>'
+           + '</div>';
+    }).join('');
+  }
+
+  function selSec(id, k, name, method, opts) {
+    return '<div class="sb" data-spa-sb="'+id+'" style="margin-bottom:5px">'
+         + '<div class="sh">'
+         + '<span class="sk" style="font-size:.8rem;min-width:22px">'+k+'</span>'
+         + '<span class="sn">'+name+'</span>'
+         + '<span class="sv spa-sv" style="font-size:.7rem;color:var(--mu)">—</span>'
+         + '</div>'
+         + '<div class="hint">'+method+'</div>'
+         + '<div class="opts">'+makeOpts(id,opts)+'</div>'
+         + '</div>';
+  }
+
+  function numSec(id, k, name, method, unit, ph, note) {
+    return '<div class="sb" style="margin-bottom:5px">'
+         + '<div class="sh">'
+         + '<span class="sk" style="font-size:.8rem;min-width:22px">'+k+'</span>'
+         + '<span class="sn">'+name+'</span>'
+         + '</div>'
+         + '<div class="hint">'+method+'&nbsp;<span style="color:var(--wn);font-size:.62rem">'+note+'</span></div>'
+         + '<div style="padding:8px 12px 10px;display:flex;align-items:center;gap:8px">'
+         + '<input id="spa-num-'+id+'" type="number" min="0" max="200" placeholder="'+ph
+          + '" data-sid="'+id+'" oninput="spaNumInput(this.dataset.sid)" style="'+INP+'">'
+         + '<span style="font-size:.76rem;color:var(--mu)">'+unit+'</span>'
+         + '</div></div>';
+  }
+
+  function stepHead(label, desc) {
+    return '<div style="margin:10px 0 6px;padding:6px 12px 5px;'
+         + 'background:color-mix(in srgb,var(--c-stoma) 10%,transparent);'
+         + 'border-radius:7px;border-left:3px solid var(--c-stoma)">'
+         + '<div style="font-size:.76rem;font-weight:700;color:var(--c-stoma)">'+label+'</div>'
+         + '<div style="font-size:.62rem;color:var(--mu)">'+desc+'</div>'
+         + '</div>';
+  }
+
+  var tbar = '<div style="display:none" class="tbar">'
+           + '<div><div style="font-size:.6rem;color:var(--mu)">装具選択判定</div>'
+           + '<div id="spa-tbar-lbl" style="font-size:.9rem;font-weight:700;line-height:1.3">—</div></div>'
+           + '<div style="font-size:.67rem;color:var(--mu);line-height:1.5">WOC看護師・専門医への相談の参考に</div>'
+           + '</div>';
+
+  var intro = '<div style="font-size:.67rem;color:var(--mu);padding:2px 2px 10px;line-height:1.6">'
+            + 'Step 1〜4の順で11項目を評価します。<br>'
+            + '出典：穴澤貞夫，大村裕子編著「ストーマ装具選択ガイドブック」金原出版，2012'
+            + '</div>';
+
+  var s1 = stepHead('Step 1　仰臥位','下肢を伸展させた状態で評価')
+    + selSec('shape','①','ストーマの形状','下肢を伸展させて観察',[
+        {v:'正円',   lc:'ok',cls:'c0',tx:'正円（円形）'},
+        {v:'非正円', lc:'',  cls:'cw',tx:'非正円（楕円・不整形）'},
+      ])
+    + numSec('height','②','ストーマの高さ（縦径）','縦径をmm単位で計測','mm','例: 30','10mm以上で突出')
+    + selSec('perioskin','③','ストーマ周囲4cm以内の皮膚異常','手術創・瘢痕・骨突出・局所的膨隆の有無',[
+        {v:'なし',lc:'ok',cls:'c0',tx:'手術創・瘢痕・骨突出・局所的膨隆なし'},
+        {v:'あり',lc:'hv',cls:'cd',tx:'手術創・瘢痕・骨突出・局所的膨隆あり'},
+      ]);
+
+  var s2 = stepHead('Step 2　仰臥位','腹壁の硬度を確認')
+    + selSec('firmness','④','ストーマ周囲4cm以内の腹壁硬度','2本の指でストーマ周囲腹部を押す',[
+        {v:'硬い',     lc:'ok',cls:'c0',tx:'硬い — 1縦指以下の沈み'},
+        {v:'普通',     lc:'',  cls:'c1',tx:'普通 — 1縦指以上の沈み'},
+        {v:'軟らかい', lc:'',  cls:'cw',tx:'軟らかい — 2縦指以上の沈み'},
+      ]);
+
+  var s3 = stepHead('Step 3　前屈位','座位から前に屈んだ状態で評価')
+    + numSec('width','⑤','ストーマサイズ（横径）','横径をmm単位で計測','mm','例: 28','縦径との比較で形状確認')
+    + selSec('flatness','⑥','外周約4cm以内の皮膚平坦度','ストーマを横から観察し外周4cm以内の形状を分類',[
+        {v:'山型',  lc:'ok',cls:'c0',tx:'山型 — 粘膜皮膚接合部が周囲皮膚より突出'},
+        {v:'平坦型',lc:'',  cls:'cw',tx:'平坦型 — 粘膜皮膚接合部が周囲皮膚と同じ'},
+        {v:'陥凹型',lc:'hv',cls:'cd',tx:'陥凹型 — 粘膜皮膚接合部が周囲皮膚より下がる'},
+      ])
+    + selSec('wrinkle_nc','⑦','外周約4cm以内の連結しないしわ','ストーマに連結しないしわ・陥凹の深さを計測',[
+        {v:'無（0〜4mm）', lc:'ok',cls:'c0',tx:'無 — 0〜4mm'},
+        {v:'有（5mm以上）',lc:'hv',cls:'cd',tx:'有 — 5mm以上'},
+      ])
+    + selSec('wrinkle_c','⑧','外周約4cm以内の連結するしわ','ストーマに連結するしわ・陥凹の深さを計測',[
+        {v:'無（0〜2mm）', lc:'ok',cls:'c0',tx:'無 — 0〜2mm'},
+        {v:'浅（3〜6mm）', lc:'',  cls:'cw',tx:'浅 — 3〜6mm'},
+        {v:'深（7mm以上）',lc:'hv',cls:'cd',tx:'深 — 7mm以上'},
+      ]);
+
+  var s4 = stepHead('Step 4　病歴・観察','病歴確認と排泄物・装着状態の観察')
+    + selSec('stoma_type','⑨','ストーマの種類','病歴で確認',[
+        {v:'結腸ストーマ（単孔式）',      lc:'ok',cls:'c0',tx:'消化管 — 結腸（単孔式）'},
+        {v:'結腸ストーマ（双孔式）',      lc:'',  cls:'c1',tx:'消化管 — 結腸（双孔式）'},
+        {v:'小腸ストーマ（単孔式）',      lc:'',  cls:'c1',tx:'消化管 — 小腸（単孔式）'},
+        {v:'小腸ストーマ（双孔式）',      lc:'',  cls:'c1',tx:'消化管 — 小腸（双孔式）'},
+        {v:'尿路ストーマ（ウロストミー）',lc:'',  cls:'c1',tx:'泌尿器 — 尿路（ウロストミー）'},
+      ])
+    + selSec('discharge','⑩','排泄物の性状','観察',[
+        {v:'有形便',    lc:'ok',cls:'c0',tx:'有形便'},
+        {v:'軟便・泥状',lc:'',  cls:'cw',tx:'軟便・泥状便'},
+        {v:'水様便',    lc:'hv',cls:'cd',tx:'水様便'},
+        {v:'尿',        lc:'ok',cls:'c0',tx:'尿（ウロストミー）'},
+      ])
+    + selSec('wear_stable','⑪','装具の装着安定性','前回交換からの漏れ・装着時間を確認',[
+        {v:'安定（3日以上）',           lc:'ok',cls:'c0',tx:'3日以上漏れなく安定'},
+        {v:'やや不安定（1〜3日）',       lc:'',  cls:'cw',tx:'1〜3日で交換が必要'},
+        {v:'不安定（1日未満・頻回漏れ）',lc:'hv',cls:'cd',tx:'1日未満・頻回の漏れあり'},
+      ]);
+
+  return intro + tbar + s1 + s2 + s3 + s4;
+}
+
+// ══════════════════════════════════════════════
+// MAIN RENDER
+// ══════════════════════════════════════════════
+function buildMain() {
+  return CATS.map(cat => `
+  <div class="cat" id="cat-${cat.id}" style="--cc:${cat.cc}">
+    <div class="cat-hdr" onclick="toggleCat('${cat.id}')">
+      <div class="cat-ico">${cat.icon}</div>
+      <div class="cat-inf">
+        <div class="cat-ttl">${cat.title}</div>
+      </div>
+      <div class="cat-badges">${cat.badges.map(b=>`<span class="cbadge">${b}</span>`).join('')}</div>
+      <span class="chev">▼</span>
+    </div>
+    <div class="cat-body">
+      ${cat.scales.length > 1 ? `<div class="tabs">${cat.scales.map(sid=>`<div class="tab" id="tab-${sid}" onclick="switchTab('${cat.id}','${sid}')">${SCALE_NAMES[sid]}</div>`).join('')}</div>` : ''}
+      ${cat.scales.map(sid=>`<div class="pane" id="pane-${sid}"></div>`).join('')}
+    </div>
+  </div>`).join('');
+}
+
+$('main').innerHTML = buildMain();
+
+// スプラッシュ：タップで閉じる
+function closeSplash() {
+  const sp = $('splash');
+  if (sp) sp.classList.add('hidden');
+}
+</script>
+</body>
+</html>
